@@ -27,6 +27,12 @@ jobs:
           java-version: '17'
           cache: gradle
       - run: chmod +x gradlew
+      - name: Check the icon matches its source
+        # docs/icon.png is committed so releases do not depend on a rasteriser, but
+        # that means it can drift from ic_sweat.xml unnoticed. Re-render and diff.
+        run: |
+          python3 scripts/render_icon.py
+          git diff --exit-code -- docs/icon.png
       - name: Run model tests
         run: ./gradlew :model:test
       - name: Print reference table
@@ -85,6 +91,9 @@ jobs:
           VERSION="${GITHUB_REF#refs/tags/v}"
           APK=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
           cp "$APK" karoo-sweat.apk
+          # The companion app fetches iconUrl over the network and cannot read the
+          # Android vector drawable, so the rendered PNG ships as a release asset.
+          cp docs/icon.png karoo-sweat.png
           # The Karoo companion app reads this manifest to install and to detect
           # updates, so the version fields must match the APK exactly.
           sed -e "s/__VERSION__/$VERSION/" \
@@ -107,6 +116,7 @@ jobs:
           make_latest: true
           files: |
             karoo-sweat.apk
+            karoo-sweat.png
             manifest.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
