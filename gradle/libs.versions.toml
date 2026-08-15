@@ -1,5 +1,5 @@
 [versions]
-agp = "8.7.3"
+agp = "9.1.0"
 kotlin = "2.4.10"
 serialization = "1.11.0"
 coroutines = "1.11.0"
@@ -16,7 +16,6 @@ junit = "4.13.2"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

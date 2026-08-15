@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
 }
@@ -65,16 +64,19 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    // compilerOptions rather than the deprecated kotlinOptions string DSL, which
-    // Kotlin 2.4 removes outright.
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
-    }
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+}
+
+// AGP 9 provides built-in Kotlin support, so the standalone
+// org.jetbrains.kotlin.android plugin is gone. AGP now exposes the Kotlin
+// configuration through this top-level extension. compilerOptions is the
+// current DSL (kotlinOptions was removed in Kotlin 2.4).
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
