@@ -25,11 +25,23 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Extension icon in the release manifest (`iconUrl`), so the companion app no longer
+  lists the extension without one. The PNG is rendered from the same droplet path as
+  `ic_sweat.xml` by `scripts/render_icon.py`, committed as `docs/icon.png` and
+  published as a release asset; CI re-renders it and fails on drift. (#16)
 - Debug-only harness activity that drives the real model and renders the real
   Glance view with synthetic inputs, so field layout can be checked without a Karoo.
 - Emulator harness (`scripts/emulator.sh`) running a Karoo-sized AVD in Docker.
 - Six instrumented tests covering DataStore persistence, including that a corrupt
   payload degrades to defaults rather than taking the data fields down mid-ride.
+
+### Changed
+
+- The manifest description now states that the app must be opened once before the
+  data fields appear, that humidity needs the companion phone in range at least once
+  per ride, and that estimates are uncalibrated out of the box. All three were
+  documented only in the README, which a rider sideloading from the companion app
+  never sees. (#16)
 
 ## [0.1.0] - 2026-08-15
 
