@@ -8,6 +8,7 @@ import de.timpara.karoosweat.model.HydrationStatus
 import de.timpara.karoosweat.model.RiderProfile
 import de.timpara.karoosweat.model.SweatAccumulator
 import de.timpara.karoosweat.model.SweatState
+import de.timpara.karoosweat.util.SweatSettings
 import de.timpara.karoosweat.util.SweatStore
 import de.timpara.karoosweat.util.consumerFlow
 import de.timpara.karoosweat.util.streamDataFlow
@@ -63,7 +64,15 @@ class SweatEngine(
     private var lastPersistMs = 0L
     private var lastAlertedStatus = HydrationStatus.OK
 
+    /**
+     * Settings are cached rather than read on demand. The tick loop runs at 1 Hz and
+     * touches settings twice per pass, so reading through to DataStore each time
+     * would mean two disk reads per second for the entire ride.
+     */
+    private var settings: SweatSettings = SweatSettings()
+
     fun start() {
+        scope.launch { store.settingsFlow().collect { settings = it } }
         scope.launch { restore() }
         scope.launch { collectStream(DataType.Type.POWER) { power = it } }
         scope.launch { collectStream(DataType.Type.SPEED) { speed = it } }
@@ -142,8 +151,7 @@ class SweatEngine(
      * inputs to do so honestly. Returning null lets time pass without inventing
      * sweat, which is preferable to silently substituting a guess.
      */
-    private suspend fun evaluate(): HeatBalanceResult? {
-        val settings = store.settings()
+    private fun evaluate(): HeatBalanceResult? {
         val profile = userProfile
         val rider = settings.toRiderProfile(profile?.weight?.toDouble())
 
@@ -173,7 +181,10 @@ class SweatEngine(
         return HeatBalance.evaluate(
             Conditions(
                 powerWatts = effectivePower,
-                airSpeedMs = speed ?: 0.0,
+                // A missing speed stream must not be read as "stationary". Zero
+                // airspeed means almost no convective cooling, which would inflate
+                // every estimate substantially. Assume a nominal riding speed instead.
+                airSpeedMs = speed ?: NOMINAL_AIR_SPEED_MS,
                 airTempC = env.temperatureC,
                 relativeHumidityPct = env.relativeHumidityPct,
             ),
@@ -181,8 +192,7 @@ class SweatEngine(
         )
     }
 
-    private suspend fun publish() {
-        val settings = store.settings()
+    private fun publish() {
         val rider = settings.toRiderProfile(userProfile?.weight?.toDouble())
         val policy = settings.toPolicy()
         val state = accumulator.state
@@ -222,5 +232,8 @@ class SweatEngine(
     private companion object {
         const val TICK_INTERVAL_MS = 1000L
         const val PERSIST_INTERVAL_MS = 30_000L
+
+        /** Roughly 22 km/h; used only when the speed stream is unavailable. */
+        const val NOMINAL_AIR_SPEED_MS = 6.0
     }
 }

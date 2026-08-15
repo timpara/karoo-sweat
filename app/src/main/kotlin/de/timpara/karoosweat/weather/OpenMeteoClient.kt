@@ -91,7 +91,7 @@ class OpenMeteoClient(private val karooSystem: KarooSystemService) {
         }
     }
 
-    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    @OptIn(kotlinx.coroutines.FlowPreview::class)
     private suspend fun request(url: String): HttpResponseState.Complete? =
         callbackFlow<HttpResponseState.Complete?> {
             val consumerId = karooSystem.addConsumer(

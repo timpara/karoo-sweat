@@ -1,5 +1,6 @@
 package de.timpara.karoosweat.engine
 
+import de.timpara.karoosweat.util.SweatSettings
 import de.timpara.karoosweat.util.SweatStore
 import de.timpara.karoosweat.util.TemperatureSource
 import de.timpara.karoosweat.util.field
@@ -15,9 +16,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.abs
 
 /** Ambient conditions actually used by the model, plus where they came from. */
@@ -60,10 +63,12 @@ class EnvironmentSource(
     val environment: StateFlow<Environment> = _environment.asStateFlow()
 
     private var sensorTempC: Double? = null
+    private var settings: SweatSettings = SweatSettings()
     private var lastFetchLat: Double? = null
     private var lastFetchLon: Double? = null
 
     fun start() {
+        scope.launch { store.settingsFlow().collect { settings = it; recombine() } }
         scope.launch { observeSensorTemperature() }
         scope.launch { refreshLoop() }
         scope.launch { recombineOnChange() }
@@ -90,7 +95,6 @@ class EnvironmentSource(
     }
 
     private suspend fun recombine(explicit: WeatherSnapshot? = null) {
-        val settings = store.settings()
         val weather = explicit ?: store.weatherFlow().first()
         val now = System.currentTimeMillis()
 
@@ -143,7 +147,13 @@ class EnvironmentSource(
     }
 
     private suspend fun currentPosition(): Pair<Double, Double>? {
-        val state = karooSystem.streamDataFlow(DataType.Type.LOCATION).first()
+        // A callbackFlow that never emits would block this loop forever, silently
+        // ending all weather updates for the rest of the ride. Bound the wait.
+        val state = withTimeoutOrNull(LOCATION_TIMEOUT_MS) {
+            karooSystem.streamDataFlow(DataType.Type.LOCATION)
+                .firstOrNull { it.field(DataType.Field.LOC_LATITUDE) != null }
+        } ?: return null
+
         val accuracy = state.field(DataType.Field.LOC_ACCURACY)
         // A fix this poor is not worth a weather lookup.
         if (accuracy != null && accuracy >= MIN_ACCURACY_M) return null
@@ -169,5 +179,6 @@ class EnvironmentSource(
         const val REFRESH_INTERVAL_MS = 10 * 60 * 1000L
         const val REFETCH_DISTANCE_KM = 5.0
         const val MIN_ACCURACY_M = 500.0
+        const val LOCATION_TIMEOUT_MS = 15_000L
     }
 }
