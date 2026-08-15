@@ -3,10 +3,15 @@ name: build
 on:
   workflow_dispatch:
   push:
-    branches: ["**"]
+    branches: [main]
     tags: ["v*"]
   pull_request:
-    branches: ["**"]
+    branches: [main]
+
+# A newer push to the same branch makes the in-flight run irrelevant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
   # The physiology core has no karoo-ext dependency and needs no secrets, so it
@@ -15,8 +20,8 @@ jobs:
     name: model tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -26,7 +31,7 @@ jobs:
         run: ./gradlew :model:test
       - name: Print reference table
         run: ./gradlew :model:test --tests '*ReferenceTable*' --rerun-tasks -i | sed -n '/Sweat rate/,/status/p'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: model-test-results
@@ -39,13 +44,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
       - run: chmod +x gradlew
 
       - name: Decode signing keystore
@@ -87,7 +92,7 @@ jobs:
               manifest.template.json > manifest.json
           cat manifest.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: karoo-sweat-apk
           path: app/build/outputs/apk/release/*.apk
