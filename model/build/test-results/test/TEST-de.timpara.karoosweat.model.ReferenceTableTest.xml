@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="de.timpara.karoosweat.model.ReferenceTableTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-15T16:09:49.730Z" hostname="DESKTOP-RVIUMLK" time="0.119">
+<testsuite name="de.timpara.karoosweat.model.ReferenceTableTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-15T16:22:20.135Z" hostname="DESKTOP-RVIUMLK" time="0.133">
   <properties/>
-  <testcase name="print reference table" classname="de.timpara.karoosweat.model.ReferenceTableTest" time="0.119"/>
+  <testcase name="print reference table" classname="de.timpara.karoosweat.model.ReferenceTableTest" time="0.133"/>
   <system-out><![CDATA[
 Sweat rate (ml/h) - 75 kg / 178 cm rider, 0.35 clo, GE 0.22
 ==============================================================================

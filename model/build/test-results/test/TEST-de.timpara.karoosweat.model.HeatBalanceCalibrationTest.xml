@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-08-15T16:09:49.609Z" hostname="DESKTOP-RVIUMLK" time="0.091">
+<testsuite name="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-08-15T16:22:19.982Z" hostname="DESKTOP-RVIUMLK" time="0.129">
   <properties/>
-  <testcase name="warm threshold ride" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.029"/>
-  <testcase name="zero power produces zero sweat" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
+  <testcase name="warm threshold ride" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.067"/>
+  <testcase name="zero power produces zero sweat" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.001"/>
   <testcase name="cool conditions are compensable" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
   <testcase name="sweat rate increases with humidity at fixed temperature" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.008"/>
-  <testcase name="sweat rate increases monotonically with temperature" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.032"/>
+  <testcase name="sweat rate increases monotonically with temperature" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.034"/>
   <testcase name="calibration multiplier scales the output linearly" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
   <testcase name="higher gross efficiency reduces sweat rate" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
   <testcase name="riding always produces at least the basal rate" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.002"/>
-  <testcase name="hot humid ride is uncompensable" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
-  <testcase name="more clothing increases sweat rate" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.001"/>
-  <testcase name="slow hot climb is worse than fast hot flat at equal power" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.002"/>
+  <testcase name="hot humid ride is uncompensable" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.001"/>
+  <testcase name="more clothing increases sweat rate" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
+  <testcase name="slow hot climb is worse than fast hot flat at equal power" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
   <testcase name="sweat rate is capped at the physiological maximum" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
   <testcase name="hot hard ride" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.001"/>
   <testcase name="heavier rider sweats more at the same absolute power" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
   <testcase name="du bois surface area matches published values" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
-  <testcase name="sweat rate increases monotonically with power" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.001"/>
-  <testcase name="cool easy endurance ride" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.001"/>
+  <testcase name="sweat rate increases monotonically with power" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.003"/>
+  <testcase name="cool easy endurance ride" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.003"/>
   <testcase name="mild tempo ride" classname="de.timpara.karoosweat.model.HeatBalanceCalibrationTest" time="0.0"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
