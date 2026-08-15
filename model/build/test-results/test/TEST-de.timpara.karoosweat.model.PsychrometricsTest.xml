@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="de.timpara.karoosweat.model.PsychrometricsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-08-15T16:30:45.554Z" hostname="DESKTOP-RVIUMLK" time="0.002">
+<testsuite name="de.timpara.karoosweat.model.PsychrometricsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-08-15T19:36:41.551Z" hostname="DESKTOP-RVIUMLK" time="0.001">
   <properties/>
   <testcase name="humidity out of range is clamped" classname="de.timpara.karoosweat.model.PsychrometricsTest" time="0.0"/>
   <testcase name="dew point equals air temperature at saturation" classname="de.timpara.karoosweat.model.PsychrometricsTest" time="0.0"/>

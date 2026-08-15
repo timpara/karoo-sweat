@@ -167,16 +167,22 @@ class HeatBalanceCalibrationTest {
     // --- Bounds and degenerate inputs ---------------------------------------------
 
     @Test
-    fun `zero power produces zero sweat`() {
-        assertEquals(0.0, sweat(0.0, 0.0, 25.0, 50.0), 1e-9)
+    fun `zero power still produces insensible fluid loss, not zero`() {
+        // Issue #12: a coasting or descending rider reports power = 0.0, but is not
+        // in a zero-metabolism state. Basal metabolism plus insensible respiratory
+        // and transepidermal loss mean fluid loss is never exactly zero while riding.
+        val descending = sweat(0.0, 45.0, 20.0, 55.0)
+        assertTrue("a descent must accrue some loss, got $descending", descending > 0.0)
+        // But with strong airflow shedding the modest basal heat, it stays low.
+        assertTrue("an unstressed descent should stay near the floor, got $descending", descending <= 200.0)
     }
 
     @Test
-    fun `riding always produces at least the basal rate`() {
-        // Freezing conditions, trivial power: the heat balance wants zero evaporation,
-        // but a riding human still loses some fluid.
+    fun `riding in the cold still produces at least the insensible floor`() {
+        // Freezing conditions, trivial power: the heat balance wants no thermoregulatory
+        // sweating, but a riding human still loses respiratory and insensible water.
         val rate = sweat(80.0, 20.0, -5.0, 80.0)
-        assertTrue("basal floor must apply, got $rate", rate in 80.0..200.0)
+        assertTrue("insensible floor must apply, got $rate", rate in 50.0..200.0)
     }
 
     @Test
@@ -196,6 +202,39 @@ class HeatBalanceCalibrationTest {
     fun `cool conditions are compensable`() {
         val result = HeatBalance.evaluate(Conditions(200.0, 8.0, 15.0, 50.0), rider)
         assertFalse("cool riding must not be uncompensable", result.uncompensable)
+    }
+
+    // --- Basal metabolic rate (issue #12) -----------------------------------------
+
+    @Test
+    fun `metabolic rate includes a basal term at zero power`() {
+        // A 75 kg / 178 cm rider has BSA ~1.93 m^2, so basal metabolism at ~45 W/m^2
+        // is roughly 87 W. It must not be zero.
+        val result = HeatBalance.evaluate(Conditions(0.0, 30.0 / 3.6, 20.0, 55.0), rider)
+        assertTrue(
+            "basal metabolic rate must be ~80-95 W, got ${result.metabolicPowerW}",
+            result.metabolicPowerW in 80.0..95.0,
+        )
+        assertTrue("basal heat production must be positive", result.heatProductionW > 0.0)
+    }
+
+    @Test
+    fun `basal metabolism scales with body size`() {
+        val small = HeatBalance.evaluate(
+            Conditions(0.0, 0.0, 20.0, 50.0), rider.copy(massKg = 55.0, heightCm = 162.0),
+        ).metabolicPowerW
+        val large = HeatBalance.evaluate(
+            Conditions(0.0, 0.0, 20.0, 50.0), rider.copy(massKg = 95.0, heightCm = 192.0),
+        ).metabolicPowerW
+        assertTrue("a larger rider has a higher basal rate: $small then $large", large > small)
+    }
+
+    @Test
+    fun `adding power raises metabolic rate above basal`() {
+        val basal = HeatBalance.evaluate(Conditions(0.0, 30.0 / 3.6, 20.0, 55.0), rider).metabolicPowerW
+        val working = HeatBalance.evaluate(Conditions(200.0, 30.0 / 3.6, 20.0, 55.0), rider).metabolicPowerW
+        // 200 W at 0.22 efficiency adds ~909 W of metabolic cost on top of basal.
+        assertEquals(basal + 200.0 / 0.22, working, 1.0)
     }
 
     // --- Body surface area --------------------------------------------------------

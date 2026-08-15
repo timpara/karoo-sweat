@@ -37,8 +37,14 @@ class ReferenceTableTest {
             Row(200.0, 10.0, 35.0, 60.0),
             Row(300.0, 34.0, 28.0, 45.0),
             Row(180.0, 26.0, 22.0, 70.0),
+            // Descents: zero power. Issue #12 was that these accrued exactly zero;
+            // the insensible-loss floor now guarantees a plausible minimum. Note the
+            // model treats a descent as thermally compensated once airflow sheds the
+            // basal heat, which is correct for the steady state but does not capture
+            // residual heat carried into the descent from a hard climb.
+            Row(0.0, 55.0, 30.0, 45.0),
+            Row(0.0, 45.0, 15.0, 60.0),
         )
-
         for (r in rows) {
             val res = HeatBalance.evaluate(
                 Conditions(r.p, r.kmh / 3.6, r.t, r.rh), rider,

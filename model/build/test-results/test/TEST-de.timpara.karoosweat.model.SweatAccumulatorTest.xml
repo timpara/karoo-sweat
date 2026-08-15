@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="de.timpara.karoosweat.model.SweatAccumulatorTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-08-15T16:30:45.742Z" hostname="DESKTOP-RVIUMLK" time="0.041">
+<testsuite name="de.timpara.karoosweat.model.SweatAccumulatorTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-08-15T19:36:41.654Z" hostname="DESKTOP-RVIUMLK" time="0.024">
   <properties/>
-  <testcase name="backwards clock jumps are ignored" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.002"/>
-  <testcase name="restore resumes from persisted state without a phantom gap" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.005"/>
+  <testcase name="backwards clock jumps are ignored" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.001"/>
+  <testcase name="restore resumes from persisted state without a phantom gap" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.004"/>
   <testcase name="recommended intake applies the replacement fraction" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.0"/>
-  <testcase name="resuming after a pause does not retroactively accrue the paused interval" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.005"/>
+  <testcase name="resuming after a pause does not retroactively accrue the paused interval" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.004"/>
   <testcase name="gut cap scales with ride duration" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.0"/>
-  <testcase name="smoothed rate converges to the instantaneous rate" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.004"/>
-  <testcase name="accrues one litre over one hour at one litre per hour" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.006"/>
-  <testcase name="first tick establishes a baseline without accruing" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.001"/>
+  <testcase name="smoothed rate converges to the instantaneous rate" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.003"/>
+  <testcase name="accrues one litre over one hour at one litre per hour" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.004"/>
+  <testcase name="first tick establishes a baseline without accruing" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.0"/>
   <testcase name="paused time accrues neither sweat nor ride time" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.001"/>
   <testcase name="recommended intake is capped by gut absorption" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.0"/>
-  <testcase name="reset clears state for a new ride" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.003"/>
-  <testcase name="null evaluation passes time without accruing sweat" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.001"/>
-  <testcase name="long gaps from process death are clamped rather than integrated" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.002"/>
+  <testcase name="reset clears state for a new ride" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.002"/>
+  <testcase name="null evaluation passes time without accruing sweat" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.0"/>
+  <testcase name="long gaps from process death are clamped rather than integrated" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.001"/>
   <testcase name="status bands track body mass loss thresholds" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.0"/>
   <testcase name="heart rate estimator maps threshold HR to FTP" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.001"/>
   <testcase name="heart rate estimator returns null without a usable profile" classname="de.timpara.karoosweat.model.SweatAccumulatorTest" time="0.0"/>

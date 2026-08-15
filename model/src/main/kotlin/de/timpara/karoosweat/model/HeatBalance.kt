@@ -135,10 +135,10 @@ data class HeatBalanceResult(
 /**
  * A partitional-calorimetry sweat rate model.
  *
- * The chain is: mechanical power -> metabolic rate -> net heat production ->
- * subtract dry (convective + radiative) and respiratory losses -> the remainder is
- * the evaporative requirement -> divide by the latent heat of vaporisation, adjusted
- * for evaporative efficiency, to get a sweat rate.
+ * The chain is: metabolic rate (basal plus the cost of mechanical work) -> net heat
+ * production -> subtract dry (convective + radiative) and respiratory losses -> the
+ * remainder is the evaporative requirement -> divide by the latent heat of
+ * vaporisation, adjusted for evaporative efficiency, to get a sweat rate.
  *
  * The approach follows the standard heat-stress framework (ISO 7933 / Gagge), with
  * the simplifications appropriate to a device that has power, speed, temperature and
@@ -164,18 +164,28 @@ object HeatBalance {
     private const val LEWIS_RATIO = 16.5
 
     /**
-     * Baseline sweat rate in ml/h while riding, even when the heat balance says no
-     * evaporative cooling is required. Accounts for insensible losses and the fact
-     * that exercising humans never fully stop sweating.
+     * Basal metabolic rate per unit body surface area, in W/m^2.
+     *
+     * Resting metabolism never switches off. For a 75 kg / 178 cm rider (BSA ~1.93
+     * m^2) this is about 87 W, matching the textbook 80-90 W resting figure. Deriving
+     * it from body surface area rather than a flat constant makes it scale correctly
+     * with rider size, and it is the physiologically honest way to represent the heat
+     * a coasting or descending rider still produces.
+     *
+     * Standard basal heat flux is ~44-46 W/m^2; 45 is used here.
      */
-    private const val BASAL_RIDING_SWEAT_ML_PER_HOUR = 90.0
+    private const val BASAL_METABOLIC_W_PER_M2 = 45.0
 
     /**
-     * Basal sweat expressed as a fraction of the rate that would be needed to shed
-     * all metabolic heat evaporatively. Scales the floor with effort, so a hard
-     * effort in the cold still shows a plausible non-zero loss.
+     * Insensible fluid loss while riding, in ml/h.
+     *
+     * A small non-evaporative floor covering respiratory water loss and baseline
+     * transepidermal loss, which continue even when the heat balance calls for no
+     * thermoregulatory sweating at all (a cold descent, say). Unlike the previous
+     * effort-gated floor, this is not conditioned on power: a rider coasting downhill
+     * still loses fluid, and that was exactly the case the model used to miss.
      */
-    private const val BASAL_HEAT_FRACTION = 0.12
+    private const val INSENSIBLE_LOSS_ML_PER_HOUR = 60.0
 
     /**
      * Fraction of ground speed that counts as effective airflow over the body.
@@ -240,7 +250,13 @@ object HeatBalance {
         val tSkin = skinTempC(tAir)
 
         // --- Metabolic rate and net heat production ---
-        val metabolicW = power / rider.grossEfficiency
+        // Metabolism is basal plus the cost of the mechanical work. The basal term is
+        // what a coasting or descending rider still produces; without it, zero power
+        // would wrongly imply zero heat and zero fluid loss.
+        val basalW = BASAL_METABOLIC_W_PER_M2 * area
+        val metabolicW = basalW + power / rider.grossEfficiency
+        // Only the mechanical work carries a useful-work credit; basal metabolism is
+        // entirely dissipated as heat.
         val heatProductionW = metabolicW - power
         val metabolicPerArea = metabolicW / area
         val heatPerArea = heatProductionW / area
@@ -298,13 +314,12 @@ object HeatBalance {
         // 1 kg of sweat is ~1 litre, so kg/h and l/h are interchangeable here.
         val rawMlPerHour = kgPerSecond * 3600.0 * 1000.0
 
-        // Floor: scales with effort so a hard effort in the cold still reads non-zero.
-        val fullEvaporationMlPerHour = heatProductionW / LATENT_HEAT_J_PER_KG * 3600.0 * 1000.0
-        val floor = if (power > 0) {
-            maxOf(BASAL_RIDING_SWEAT_ML_PER_HOUR, BASAL_HEAT_FRACTION * fullEvaporationMlPerHour)
-        } else {
-            0.0
-        }
+        // Insensible-loss floor. Now that basal metabolism is in the heat balance,
+        // the evaporative requirement is already non-zero across normal riding, so
+        // this floor no longer has to paper over a modelling gap. It only guarantees
+        // the small respiratory and transepidermal loss that persists even on a cold
+        // descent, and it is deliberately not gated on power.
+        val floor = INSENSIBLE_LOSS_ML_PER_HOUR
 
         val sweatRate = (rawMlPerHour * rider.sweatMultiplier)
             .coerceAtLeast(floor)

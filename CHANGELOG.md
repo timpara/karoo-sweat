@@ -9,6 +9,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- The heat balance derived metabolic rate purely from mechanical power, so a coasting
+  or descending rider (power = 0) accrued exactly zero sweat loss, which is not a
+  physiological state. A basal metabolic term (~45 W/m^2 of body surface area, ~87 W
+  for a 75 kg rider) is now always present, and an ungated insensible-loss floor
+  guarantees a plausible minimum during descents. This raised estimates across all
+  riding by roughly 15-20%, since the previous model omitted resting metabolism
+  everywhere, not only at zero power. Reference table and calibration bands
+  regenerated. (#12)
+
 - The hydration field rendered every label at 0sp when the Karoo reported a
   zero-sized `ViewConfig`, a known firmware issue on releases up to ~1.527
   (karoo-ext#26). The field appeared entirely blank with no indication why. Font

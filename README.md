@@ -143,16 +143,19 @@ enough.
 
 | Power | Speed | Temp | RH | Sweat | Wettedness |
 |---|---|---|---|---|---|
-| 150 W | 25 km/h | 10 °C | 60% | 95 ml/h | 0.00 |
-| 200 W | 28 km/h | 18 °C | 55% | 397 ml/h | 0.12 |
-| 250 W | 30 km/h | 25 °C | 50% | 1316 ml/h | 0.37 |
-| 250 W | 8 km/h | 25 °C | 50% | 2320 ml/h | 0.85 |
-| 250 W | 30 km/h | 32 °C | 40% | 1959 ml/h | 0.50 |
+| 150 W | 25 km/h | 10 °C | 60% | 60 ml/h | 0.00 |
+| 200 W | 28 km/h | 18 °C | 55% | 588 ml/h | 0.18 |
+| 250 W | 30 km/h | 25 °C | 50% | 1557 ml/h | 0.43 |
+| 250 W | 8 km/h | 25 °C | 50% | 2500 ml/h | 0.96 |
+| 250 W | 30 km/h | 32 °C | 40% | 2255 ml/h | 0.56 |
 | 250 W | 30 km/h | 32 °C | 85% | 2500 ml/h | 1.00 uncompensable |
-| 300 W | 34 km/h | 28 °C | 45% | 2045 ml/h | 0.50 |
+| 300 W | 34 km/h | 28 °C | 45% | 2337 ml/h | 0.55 |
+| 0 W (descent) | 45 km/h | 15 °C | 60% | 60 ml/h | 0.00 |
 
 Note the slow hot climb: same power as the fast flat, but almost no convective
-cooling, so nearly twice the sweat rate.
+cooling, so nearly twice the sweat rate. The descent row is a floor: a coasting rider
+is not thermally stressed, but still loses respiratory and insensible water rather
+than the physiologically impossible zero.
 
 ## Project layout
 
