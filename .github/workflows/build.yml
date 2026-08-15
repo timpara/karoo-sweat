@@ -26,7 +26,7 @@ jobs:
         run: ./gradlew :model:test
       - name: Print reference table
         run: ./gradlew :model:test --tests '*ReferenceTable*' --rerun-tasks -i | sed -n '/Sweat rate/,/status/p'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: model-test-results
@@ -87,7 +87,7 @@ jobs:
               manifest.template.json > manifest.json
           cat manifest.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: karoo-sweat-apk
           path: app/build/outputs/apk/release/*.apk
