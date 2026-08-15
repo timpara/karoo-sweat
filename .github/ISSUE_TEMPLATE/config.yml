@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Karoo extension development
+    url: https://github.com/hammerheadnav/karoo-ext
+    about: Questions about the karoo-ext SDK itself belong upstream.

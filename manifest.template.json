@@ -1,0 +1,9 @@
+{
+  "label": "Karoo Sweat",
+  "packageName": "de.timpara.karoosweat",
+  "latestApkUrl": "https://github.com/timpara/karoo-sweat/releases/latest/download/karoo-sweat.apk",
+  "latestVersion": "__VERSION__",
+  "latestVersionCode": __VERSION_CODE__,
+  "developer": "timpara",
+  "description": "Estimates sweat loss from a physiological heat-balance model and shows how much you should have drunk by now. Uses power, speed, temperature and humidity."
+}

@@ -1,14 +1,15 @@
 package de.timpara.karoosweat.engine
 
 import de.timpara.karoosweat.model.Conditions
+import de.timpara.karoosweat.model.Environment
 import de.timpara.karoosweat.model.HeartRateEstimator
+import de.timpara.karoosweat.model.SweatSettings
 import de.timpara.karoosweat.model.HeatBalance
 import de.timpara.karoosweat.model.HeatBalanceResult
 import de.timpara.karoosweat.model.HydrationStatus
 import de.timpara.karoosweat.model.RiderProfile
 import de.timpara.karoosweat.model.SweatAccumulator
 import de.timpara.karoosweat.model.SweatState
-import de.timpara.karoosweat.util.SweatSettings
 import de.timpara.karoosweat.util.SweatStore
 import de.timpara.karoosweat.util.consumerFlow
 import de.timpara.karoosweat.util.streamDataFlow

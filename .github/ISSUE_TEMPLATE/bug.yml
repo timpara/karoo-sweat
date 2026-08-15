@@ -1,0 +1,31 @@
+name: Bug
+description: Something crashed, hung, or did not appear
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations: { required: true }
+  - type: input
+    id: device
+    attributes:
+      label: Device and Karoo OS version
+      placeholder: "Karoo 3, 1.x.x"
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      placeholder: "0.1.0"
+    validations: { required: true }
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logcat output, if you have it
+      render: shell

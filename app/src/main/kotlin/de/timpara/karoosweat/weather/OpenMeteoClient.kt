@@ -1,5 +1,6 @@
 package de.timpara.karoosweat.weather
 
+import de.timpara.karoosweat.model.WeatherSnapshot
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.models.HttpResponseState
 import io.hammerhead.karooext.models.OnHttpResponse
@@ -13,28 +14,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.seconds
-
-/** Cached ambient conditions, with enough metadata to judge staleness. */
-@Serializable
-data class WeatherSnapshot(
-    val temperatureC: Double,
-    val relativeHumidityPct: Double,
-    val latitude: Double,
-    val longitude: Double,
-    val fetchedAtEpochMs: Long,
-) {
-    fun ageMs(nowMs: Long): Long = nowMs - fetchedAtEpochMs
-
-    /**
-     * Weather this old is still far better than a guess, but a rider who has
-     * descended 1500 m or ridden into the evening should not be trusting it.
-     */
-    fun isStale(nowMs: Long): Boolean = ageMs(nowMs) > STALE_AFTER_MS
-
-    companion object {
-        const val STALE_AFTER_MS = 3 * 60 * 60 * 1000L
-    }
-}
 
 @Serializable
 private data class OpenMeteoResponse(

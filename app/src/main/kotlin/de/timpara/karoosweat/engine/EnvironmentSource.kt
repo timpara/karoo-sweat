@@ -1,12 +1,14 @@
 package de.timpara.karoosweat.engine
 
-import de.timpara.karoosweat.util.SweatSettings
+import de.timpara.karoosweat.model.Environment
+import de.timpara.karoosweat.model.EnvironmentResolver
+import de.timpara.karoosweat.model.GeoDistance
+import de.timpara.karoosweat.model.SweatSettings
+import de.timpara.karoosweat.model.WeatherSnapshot
 import de.timpara.karoosweat.util.SweatStore
-import de.timpara.karoosweat.util.TemperatureSource
 import de.timpara.karoosweat.util.field
 import de.timpara.karoosweat.util.streamDataFlow
 import de.timpara.karoosweat.weather.OpenMeteoClient
-import de.timpara.karoosweat.weather.WeatherSnapshot
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.models.DataType
 import kotlinx.coroutines.CoroutineScope
@@ -21,28 +23,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.math.abs
-
-/** Ambient conditions actually used by the model, plus where they came from. */
-data class Environment(
-    val temperatureC: Double,
-    val relativeHumidityPct: Double,
-    val temperatureFromSensor: Boolean,
-    val humidityIsFallback: Boolean,
-    val weatherAgeMs: Long?,
-)
 
 /**
- * Resolves ambient temperature and humidity from the best source available.
+ * Feeds ambient conditions to the model from the best source available.
  *
- * Priority is deliberate:
- *  1. Open-Meteo, cached in DataStore so it survives going offline. This is the only
- *     possible source of humidity, because no Karoo data type reports it.
- *  2. The on-device [DataType.Type.TEMPERATURE] stream, for temperature only. It is
- *     optional (it may never report) and is biased upward by device self-heating and
- *     direct sun, which is why it is not the default.
- *  3. User-configured fallbacks, so the model still produces a defensible number on
- *     a rider who has never had connectivity.
+ * This class is only plumbing: it owns the coroutines, the network calls and the
+ * cache. The actual decision of which reading to trust lives in
+ * [EnvironmentResolver], where it can be tested.
  */
 class EnvironmentSource(
     private val karooSystem: KarooSystemService,
@@ -52,13 +39,7 @@ class EnvironmentSource(
     private val client = OpenMeteoClient(karooSystem)
 
     private val _environment = MutableStateFlow(
-        Environment(
-            temperatureC = 20.0,
-            relativeHumidityPct = 50.0,
-            temperatureFromSensor = false,
-            humidityIsFallback = true,
-            weatherAgeMs = null,
-        ),
+        EnvironmentResolver.resolve(null, null, SweatSettings(), 0L),
     )
     val environment: StateFlow<Environment> = _environment.asStateFlow()
 
@@ -68,60 +49,47 @@ class EnvironmentSource(
     private var lastFetchLon: Double? = null
 
     fun start() {
-        scope.launch { store.settingsFlow().collect { settings = it; recombine() } }
+        scope.launch {
+            store.settingsFlow().collect {
+                settings = it
+                recombine()
+            }
+        }
         scope.launch { observeSensorTemperature() }
+        scope.launch { store.weatherFlow().collect { recombine(it) } }
         scope.launch { refreshLoop() }
-        scope.launch { recombineOnChange() }
     }
 
     /**
      * The device temperature stream is best-effort. It frequently reports
-     * [io.hammerhead.karooext.models.StreamState.NotAvailable], and when it does
-     * report it can read several degrees high in the sun, so it is only consulted
-     * when the rider has explicitly preferred it.
+     * `NotAvailable`, and when it does report it can read several degrees high in
+     * direct sun or from the unit's own waste heat, which is why it is not the
+     * default source.
      */
     private suspend fun observeSensorTemperature() {
         karooSystem.streamDataFlow(DataType.Type.TEMPERATURE)
             .map { it.field(DataType.Field.TEMPERATURE) }
             .distinctUntilChanged()
-            .collect { temp ->
-                sensorTempC = temp
+            .collect {
+                sensorTempC = it
                 recombine()
             }
     }
 
-    private suspend fun recombineOnChange() {
-        store.weatherFlow().collect { recombine(it) }
-    }
-
     private suspend fun recombine(explicit: WeatherSnapshot? = null) {
         val weather = explicit ?: store.weatherFlow().first()
-        val now = System.currentTimeMillis()
-
-        val sensor = sensorTempC
-        val preferSensor = settings.temperatureSource == TemperatureSource.DEVICE_SENSOR
-
-        val temperature = when {
-            preferSensor && sensor != null -> sensor
-            weather != null -> weather.temperatureC
-            sensor != null -> sensor
-            else -> settings.fallbackTempC
-        }
-        val usedSensor = temperature == sensor && (preferSensor || weather == null)
-
-        _environment.value = Environment(
-            temperatureC = temperature,
-            relativeHumidityPct = weather?.relativeHumidityPct ?: settings.fallbackHumidityPct,
-            temperatureFromSensor = usedSensor,
-            humidityIsFallback = weather == null,
-            weatherAgeMs = weather?.ageMs(now),
+        _environment.value = EnvironmentResolver.resolve(
+            weather = weather,
+            sensorTempC = sensorTempC,
+            settings = settings,
+            nowMs = System.currentTimeMillis(),
         )
     }
 
     /**
-     * Refetch hourly, or sooner if the rider has moved far enough that the local
-     * conditions plausibly differ. Failures are silent and simply leave the cache in
-     * place; a stale reading beats no reading.
+     * Refetch hourly, or sooner if the rider has moved far enough that local
+     * conditions plausibly differ. Failures are silent and leave the cache in place:
+     * a stale reading beats no reading.
      */
     private suspend fun refreshLoop() {
         while (scope.isActive) {
@@ -143,7 +111,7 @@ class EnvironmentSource(
         if (cached.isStale(System.currentTimeMillis())) return true
         val lat = lastFetchLat ?: return true
         val lon = lastFetchLon ?: return true
-        return approxDistanceKm(lat, lon, position.first, position.second) > REFETCH_DISTANCE_KM
+        return GeoDistance.approxKm(lat, lon, position.first, position.second) > REFETCH_DISTANCE_KM
     }
 
     private suspend fun currentPosition(): Pair<Double, Double>? {
@@ -160,19 +128,6 @@ class EnvironmentSource(
         val lat = state.field(DataType.Field.LOC_LATITUDE) ?: return null
         val lon = state.field(DataType.Field.LOC_LONGITUDE) ?: return null
         return lat to lon
-    }
-
-    /** Equirectangular approximation; ample for a "have I moved a few km" test. */
-    private fun approxDistanceKm(
-        lat1: Double,
-        lon1: Double,
-        lat2: Double,
-        lon2: Double,
-    ): Double {
-        val meanLatRad = Math.toRadians((lat1 + lat2) / 2)
-        val dx = (lon2 - lon1) * 111.32 * kotlin.math.cos(meanLatRad)
-        val dy = (lat2 - lat1) * 110.57
-        return kotlin.math.sqrt(dx * dx + dy * dy).let { abs(it) }
     }
 
     private companion object {

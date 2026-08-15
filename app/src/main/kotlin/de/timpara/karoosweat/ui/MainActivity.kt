@@ -24,7 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import de.timpara.karoosweat.util.SweatSettings
+import de.timpara.karoosweat.model.SweatSettings
 import de.timpara.karoosweat.util.SweatStore
 import kotlinx.coroutines.launch
 

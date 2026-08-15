@@ -1,0 +1,47 @@
+name: Calibration data
+description: Share a weigh-in measurement to help improve the model
+labels: [calibration, data]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. This is the single most useful contribution to this project.
+
+        True sweat loss = (mass before - mass after) + fluid consumed.
+        Weigh nude, towel dry, and account for anything you ate.
+  - type: input
+    id: measured
+    attributes:
+      label: Measured true sweat loss
+      placeholder: "1.85 kg over 2h10 (lost 1.1 kg, drank 750 ml)"
+    validations: { required: true }
+  - type: input
+    id: estimated
+    attributes:
+      label: Estimated sweat loss from the extension
+      description: The `sweat_loss` field at the end of the ride, or the FIT session value
+      placeholder: "1420 ml"
+    validations: { required: true }
+  - type: input
+    id: conditions
+    attributes:
+      label: Conditions
+      placeholder: "27 C, 45% RH, mostly sunny"
+    validations: { required: true }
+  - type: input
+    id: effort
+    attributes:
+      label: Average power, average speed, duration
+      placeholder: "215 W, 27 km/h, 2h10"
+    validations: { required: true }
+  - type: input
+    id: rider
+    attributes:
+      label: Rider mass, height, clothing, sweat multiplier used
+      placeholder: "72 kg, 176 cm, summer kit, multiplier 1.0"
+    validations: { required: true }
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      placeholder: "Heat acclimated, lots of climbing, etc."

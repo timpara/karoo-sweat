@@ -13,14 +13,33 @@ android {
         applicationId = "de.timpara.karoosweat"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        // CI supplies a monotonic build number; local builds stay at 1.
+        versionCode = (System.getenv("BUILD_NUMBER") ?: "1").toInt()
+        versionName = System.getenv("RELEASE_VERSION")?.removePrefix("v") ?: "0.1.0"
+    }
+
+    signingConfigs {
+        create("release") {
+            // Supplied by CI from repository secrets. The keystore is never
+            // committed; when the variables are absent the release build simply
+            // stays unsigned, so contributors can still build it.
+            val keystorePath = System.getenv("KEYSTORE_PATH")
+            if (keystorePath != null && file(keystorePath).exists()) {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (System.getenv("KEYSTORE_PATH") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {

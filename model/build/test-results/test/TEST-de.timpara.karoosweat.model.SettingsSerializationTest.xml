@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="de.timpara.karoosweat.model.SettingsSerializationTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-08-15T14:43:45" hostname="DESKTOP-RVIUMLK" time="0.036">
+  <properties/>
+  <testcase name="a payload from a newer build ignores unknown fields" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.028"/>
+  <testcase name="rider mass falls back to a default when nothing is known" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.001"/>
+  <testcase name="ride state survives a round trip" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.004"/>
+  <testcase name="settings survive a round trip" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.001"/>
+  <testcase name="an empty payload yields defaults" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.0"/>
+  <testcase name="settings map onto the hydration policy" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.001"/>
+  <testcase name="an invalid rider profile is rejected rather than silently wrong" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.0"/>
+  <testcase name="rider mass prefers an explicit override" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.0"/>
+  <testcase name="rider mass falls back to the karoo profile" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.0"/>
+  <testcase name="clothing drives the bare skin fraction" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.0"/>
+  <testcase name="a payload from an older build decodes using defaults" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.0"/>
+  <testcase name="settings map onto the rider profile" classname="de.timpara.karoosweat.model.SettingsSerializationTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

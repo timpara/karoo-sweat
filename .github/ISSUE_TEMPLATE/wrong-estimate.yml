@@ -1,0 +1,56 @@
+name: Wrong sweat estimate
+description: The number looks too high or too low
+labels: [model, needs-data]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A report that the estimate "looks wrong" cannot be acted on without the
+        conditions that produced it. The fields below are what make it actionable.
+
+        If you have done a weigh-in, please use the "Calibration data" template
+        instead. That is far more valuable.
+  - type: textarea
+    id: what
+    attributes:
+      label: What was displayed, and what did you expect?
+      placeholder: "Showed 2100 ml/h; I would expect roughly 900 ml/h for this effort."
+    validations: { required: true }
+  - type: input
+    id: conditions
+    attributes:
+      label: Conditions
+      description: Temperature, humidity, and whether it was sunny
+      placeholder: "24 C, ~55% RH, overcast"
+    validations: { required: true }
+  - type: input
+    id: effort
+    attributes:
+      label: Power and speed
+      placeholder: "~230 W average, ~29 km/h"
+    validations: { required: true }
+  - type: input
+    id: rider
+    attributes:
+      label: Rider mass and height
+      placeholder: "72 kg, 176 cm"
+    validations: { required: true }
+  - type: dropdown
+    id: clothing
+    attributes:
+      label: Clothing setting
+      options: ["Summer kit (~0.35 clo)", "Arm warmers (~0.6 clo)", "Winter jacket (~1.0 clo)", "Other"]
+    validations: { required: true }
+  - type: input
+    id: multiplier
+    attributes:
+      label: Sweat multiplier setting
+      placeholder: "1.0 (default)"
+  - type: checkboxes
+    id: caveats
+    attributes:
+      label: Did the field show any caveat labels?
+      options:
+        - label: "`HR est` (no power meter)"
+        - label: "`no RH` (no humidity data)"
+        - label: "`HEAT` (uncompensable)"

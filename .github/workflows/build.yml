@@ -1,15 +1,18 @@
 name: build
 
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+    branches: ["**"]
 
 jobs:
-  model-tests:
-    # The physiology core has no karoo-ext dependency, so it needs no secrets and
-    # runs on forks and pull requests.
+  # The physiology core has no karoo-ext dependency and needs no secrets, so it
+  # runs on forks and pull requests from anyone.
+  model:
+    name: model tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,25 +20,88 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :model:test
+          cache: gradle
+      - run: chmod +x gradlew
+      - name: Run model tests
+        run: ./gradlew :model:test
+      - name: Print reference table
+        run: ./gradlew :model:test --tests '*ReferenceTable*' --rerun-tasks -i | sed -n '/Sweat rate/,/status/p'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: model-test-results
+          path: model/build/reports/tests/test
 
   apk:
+    name: build apk
     runs-on: ubuntu-latest
-    needs: model-tests
+    needs: model
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
-      - name: Assemble
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+      - run: chmod +x gradlew
+
+      - name: Decode signing keystore
+        if: env.KEYSTORE_BASE64 != ''
         env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Set version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
+
+      - name: Build
+        env:
+          # karoo-ext is published only to GitHub Packages, which requires auth
+          # even for public packages.
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :app:assembleRelease
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: ./gradlew build
+
+      - name: Stage release assets
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          APK=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
+          cp "$APK" karoo-sweat.apk
+          # The Karoo companion app reads this manifest to install and to detect
+          # updates, so the version fields must match the APK exactly.
+          sed -e "s/__VERSION__/$VERSION/" \
+              -e "s/__VERSION_CODE__/$BUILD_NUMBER/" \
+              manifest.template.json > manifest.json
+          cat manifest.json
+
       - uses: actions/upload-artifact@v4
         with:
           name: karoo-sweat-apk
           path: app/build/outputs/apk/release/*.apk
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          draft: false
+          generate_release_notes: true
+          make_latest: true
+          files: |
+            karoo-sweat.apk
+            manifest.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
