@@ -7,6 +7,21 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- The hydration field rendered every label at 0sp when the Karoo reported a
+  zero-sized `ViewConfig`, a known firmware issue on releases up to ~1.527
+  (karoo-ext#26). The field appeared entirely blank with no indication why. Font
+  sizes now fall back to a sane base.
+
+### Added
+
+- Debug-only harness activity that drives the real model and renders the real
+  Glance view with synthetic inputs, so field layout can be checked without a Karoo.
+- Emulator harness (`scripts/emulator.sh`) running a Karoo-sized AVD in Docker.
+- Six instrumented tests covering DataStore persistence, including that a corrupt
+  payload degrades to defaults rather than taking the data fields down mid-ride.
+
 ## [0.1.0] - 2026-08-15
 
 First release. **Not yet validated on hardware or against real weigh-in data.**

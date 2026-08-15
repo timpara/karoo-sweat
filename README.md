@@ -12,6 +12,11 @@ have drunk by now**.
 No other Karoo extension does this. [nomride](https://github.com/yrkan/nomride) logs
 what you drink and models carbohydrate burn; this one models what you *lose*.
 
+![Hydration field](docs/preview-field.png)
+
+*The hydration field rendered at Karoo dimensions. Amber indicates projected body
+mass loss has passed 2%.*
+
 ## Data fields
 
 | Field | Type | Shows |
@@ -181,6 +186,25 @@ Then:
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### Testing without a Karoo
+
+`scripts/emulator.sh` boots an emulator configured to match the Karoo panel
+(480x800, density 320) in Docker, installs the app, and runs the instrumented tests.
+
+Be clear about what that does and does not prove. `KarooSystemService` binds to a
+proprietary Karoo OS component that does not exist on a stock emulator, so **data
+streams, ride lifecycle, field registration and FIT writing cannot be tested there**.
+What the emulator does cover is that the app installs and launches, the settings
+screen works, the foreground service starts, DataStore persistence behaves, and the
+data field composes and stays legible.
+
+For the last of those there is a debug-only harness that feeds synthetic conditions
+through the real model and renders the real Glance view:
+
+```bash
+adb shell am start -n de.timpara.karoosweat/.ui.HarnessActivity
+```
+
 To see the model's prediction surface:
 
 ```bash
@@ -204,8 +228,10 @@ two seconds. You do not need a Karoo to improve the part that matters.
 
 - The model is tested (67 unit tests) and its predictions sit inside published
   literature ranges.
-- The Android layer compiles and the APK is verified, but **it has not yet been run
-  on a physical Karoo**.
+- The app installs, launches and survives on an emulator: settings, foreground
+  service, persistence (6 instrumented tests) and field rendering all verified.
+- **It has not yet been run on a physical Karoo**, so nothing involving the Karoo
+  system service (streams, ride lifecycle, FIT export) has been exercised at all.
 - No calibration against real weigh-in data has been done yet.
 
 Treat the numbers as a well-reasoned estimate, not a measurement.

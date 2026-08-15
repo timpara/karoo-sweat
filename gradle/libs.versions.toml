@@ -43,6 +43,8 @@ androidx-compose-material = { module = "androidx.compose.material3:material3", v
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
+androidx-test-runner = { module = "androidx.test:runner", version = "1.6.2" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version = "1.2.1" }
 
 [bundles]
 androidx-lifeycle = ["androidx-lifecycle-runtime-compose", "androidx-lifecycle-viewmodel-compose"]

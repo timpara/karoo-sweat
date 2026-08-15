@@ -11,6 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "de.timpara.karoosweat"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         minSdk = 26
         targetSdk = 35
         // CI supplies a monotonic build number; local builds stay at 1.
@@ -68,4 +69,9 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.bundles.compose.ui)
     implementation(libs.androidx.glance.appwidget)
+
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.junit)
 }

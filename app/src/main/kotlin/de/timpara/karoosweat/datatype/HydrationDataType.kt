@@ -1,6 +1,7 @@
 package de.timpara.karoosweat.datatype
 
 import android.content.Context
+import android.widget.RemoteViews
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
@@ -43,8 +44,6 @@ class HydrationDataType(
     private val engine: SweatEngine,
 ) : DataTypeImpl(extension, TYPE_ID) {
 
-    private val glance = GlanceRemoteViews()
-
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
         // We draw our own label, so suppress the system header.
         emitter.onNext(UpdateGraphicConfig(showHeader = false))
@@ -53,10 +52,7 @@ class HydrationDataType(
             engine.snapshot.filterNotNull().collect { snapshot ->
                 // Karoo rate-limits view updates to about 1 Hz and silently drops
                 // anything faster, so there is no point throttling further here.
-                val result = glance.compose(context, DpSize.Unspecified) {
-                    HydrationView(snapshot, config)
-                }
-                emitter.updateView(result.remoteViews)
+                emitter.updateView(renderHydrationView(context, snapshot, config))
             }
         }
         emitter.setCancellable { job.cancel() }
@@ -65,6 +61,22 @@ class HydrationDataType(
     companion object { const val TYPE_ID = "hydration" }
 }
 
+/**
+ * Compose the hydration field into RemoteViews.
+ *
+ * Extracted from the data type so the debug harness can render the exact same view
+ * off-device. Anything that only the harness exercises is not worth testing, so the
+ * production path and the preview path deliberately share this function.
+ */
+@OptIn(ExperimentalGlanceRemoteViewsApi::class)
+suspend fun renderHydrationView(
+    context: Context,
+    snapshot: SweatSnapshot,
+    config: ViewConfig,
+): RemoteViews = GlanceRemoteViews()
+    .compose(context, DpSize.Unspecified) { HydrationView(snapshot, config) }
+    .remoteViews
+
 @Composable
 private fun HydrationView(snapshot: SweatSnapshot, config: ViewConfig) {
     val accent = when (snapshot.status) {
@@ -72,8 +84,14 @@ private fun HydrationView(snapshot: SweatSnapshot, config: ViewConfig) {
         HydrationStatus.WARN -> Color(0xFFEF6C00)
         HydrationStatus.CRITICAL -> Color(0xFFC62828)
     }
-    val big = (config.textSize * 1.6f).sp
-    val small = (config.textSize * 0.62f).sp
+    // Karoo firmware up to ~1.527 reports a zero-sized ViewConfig (karoo-ext#26).
+    // Scaling fonts directly off that would render every label at 0sp, so the
+    // rider would see an entirely blank field with no clue why. Fall back to a
+    // sane base size rather than trusting the value.
+    val base = if (config.textSize > 0) config.textSize else DEFAULT_TEXT_SIZE
+    val big = (base * 1.6f).sp
+    val small = (base * 0.62f).sp
+    val tiny = (base * 0.5f).sp
 
     Column(
         modifier = GlanceModifier.fillMaxSize().padding(4.dp()).background(Color.Transparent),
@@ -113,10 +131,13 @@ private fun HydrationView(snapshot: SweatSnapshot, config: ViewConfig) {
         if (caveats.isNotEmpty()) {
             Text(
                 text = caveats.joinToString(" - "),
-                style = TextStyle(fontSize = (config.textSize * 0.5f).sp),
+                style = TextStyle(fontSize = tiny),
             )
         }
     }
 }
 
 private fun Int.dp() = androidx.compose.ui.unit.Dp(this.toFloat())
+
+/** Used when the Karoo reports a zero-sized view config. */
+private const val DEFAULT_TEXT_SIZE = 20

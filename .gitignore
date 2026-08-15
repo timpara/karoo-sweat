@@ -9,3 +9,6 @@
 .cxx
 local.properties
 /app/release
+
+# emulator screenshots pulled from the device
+/screenshot.png

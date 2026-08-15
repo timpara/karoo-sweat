@@ -61,6 +61,15 @@ class SweatStore(private val context: Context) {
         context.dataStore.edit { it[KEY_WEATHER] = json.encodeToString(snapshot) }
     }
 
+    /**
+     * Write an arbitrary settings payload. Exists so instrumented tests can verify
+     * that a corrupt blob degrades to defaults rather than taking down the data
+     * fields mid-ride.
+     */
+    suspend fun writeRawSettingsForTest(raw: String) {
+        context.dataStore.edit { it[KEY_SETTINGS] = raw }
+    }
+
     private inline fun <reified T> decode(raw: String?, fallback: T): T =
         raw?.let { decodeOrNull<T>(it) } ?: fallback
 
