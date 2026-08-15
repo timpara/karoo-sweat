@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="de.timpara.karoosweat.model.EnvironmentResolverTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-08-15T14:43:45" hostname="DESKTOP-RVIUMLK" time="0.006">
+<testsuite name="de.timpara.karoosweat.model.EnvironmentResolverTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-08-15T16:09:49.566Z" hostname="DESKTOP-RVIUMLK" time="0.016">
   <properties/>
-  <testcase name="humidity falls back and is flagged when no weather exists" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.004"/>
-  <testcase name="weather is used when preferred and available" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.0"/>
+  <testcase name="humidity falls back and is flagged when no weather exists" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.008"/>
+  <testcase name="weather is used when preferred and available" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.001"/>
   <testcase name="staleness threshold is three hours" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.0"/>
-  <testcase name="humidity always comes from weather when available" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.0"/>
+  <testcase name="humidity always comes from weather when available" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.001"/>
   <testcase name="weather age is reported and null when absent" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.0"/>
   <testcase name="sensor is used when preferred source has no data" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.0"/>
   <testcase name="configured fallback is the last resort" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.0"/>
   <testcase name="sensor is used when preferred and available" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.0"/>
-  <testcase name="weather is used when sensor preferred but silent" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.0"/>
+  <testcase name="weather is used when sensor preferred but silent" classname="de.timpara.karoosweat.model.EnvironmentResolverTest" time="0.001"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="de.timpara.karoosweat.model.GeoDistanceTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-08-15T14:43:45" hostname="DESKTOP-RVIUMLK" time="0.002">
+<testsuite name="de.timpara.karoosweat.model.GeoDistanceTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-08-15T16:09:49.587Z" hostname="DESKTOP-RVIUMLK" time="0.003">
   <properties/>
   <testcase name="identical points are zero distance apart" classname="de.timpara.karoosweat.model.GeoDistanceTest" time="0.001"/>
   <testcase name="longitude degrees shrink with latitude" classname="de.timpara.karoosweat.model.GeoDistanceTest" time="0.0"/>
   <testcase name="one degree of latitude is about 111 km" classname="de.timpara.karoosweat.model.GeoDistanceTest" time="0.0"/>
-  <testcase name="known city pair matches published distance" classname="de.timpara.karoosweat.model.GeoDistanceTest" time="0.001"/>
-  <testcase name="distance is symmetric" classname="de.timpara.karoosweat.model.GeoDistanceTest" time="0.0"/>
+  <testcase name="known city pair matches published distance" classname="de.timpara.karoosweat.model.GeoDistanceTest" time="0.0"/>
+  <testcase name="distance is symmetric" classname="de.timpara.karoosweat.model.GeoDistanceTest" time="0.001"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
