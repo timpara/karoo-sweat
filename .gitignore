@@ -12,3 +12,10 @@ local.properties
 
 # emulator screenshots pulled from the device
 /screenshot.png
+
+# signing material — must never be committed
+*.jks
+*.keystore
+keystore-password.txt
+keystore-export.txt
+signing.properties

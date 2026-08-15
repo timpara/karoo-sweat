@@ -19,17 +19,35 @@ android {
         versionName = System.getenv("RELEASE_VERSION")?.removePrefix("v") ?: "0.1.0"
     }
 
+    // Resolve the signing material from one of two places, in order:
+    //   1. CI: the KEYSTORE_PATH / *_PASSWORD / KEY_ALIAS environment variables,
+    //      populated from repository secrets.
+    //   2. Local: ~/.config/karoo-sweat/, so the maintainer can produce a signed
+    //      release build off a personal machine without CI. Password is read from a
+    //      sibling file rather than hardcoded.
+    // If neither is present the release build is left unsigned, so contributors and
+    // forks can still build it. The keystore itself is never committed.
+    val signing: Triple<File, String, String>? = run {
+        val envPath = System.getenv("KEYSTORE_PATH")
+        if (envPath != null && file(envPath).exists()) {
+            val pw = System.getenv("KEYSTORE_PASSWORD") ?: ""
+            return@run Triple(file(envPath), pw, System.getenv("KEY_ALIAS") ?: "karoo-sweat")
+        }
+        val local = File(System.getProperty("user.home"), ".config/karoo-sweat/karoo-sweat.jks")
+        val pwFile = File(System.getProperty("user.home"), ".config/karoo-sweat/keystore-password.txt")
+        if (local.exists() && pwFile.exists()) {
+            return@run Triple(local, pwFile.readText().trim(), "karoo-sweat")
+        }
+        null
+    }
+
     signingConfigs {
         create("release") {
-            // Supplied by CI from repository secrets. The keystore is never
-            // committed; when the variables are absent the release build simply
-            // stays unsigned, so contributors can still build it.
-            val keystorePath = System.getenv("KEYSTORE_PATH")
-            if (keystorePath != null && file(keystorePath).exists()) {
-                storeFile = file(keystorePath)
-                storePassword = System.getenv("KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS")
-                keyPassword = System.getenv("KEY_PASSWORD")
+            signing?.let { (store, password, alias) ->
+                storeFile = store
+                storePassword = password
+                keyAlias = alias
+                keyPassword = System.getenv("KEY_PASSWORD") ?: password
             }
         }
     }
@@ -38,7 +56,7 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            if (System.getenv("KEYSTORE_PATH") != null) {
+            if (signing != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
