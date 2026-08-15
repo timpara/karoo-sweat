@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
@@ -43,8 +42,13 @@ class EnvironmentSource(
     )
     val environment: StateFlow<Environment> = _environment.asStateFlow()
 
-    private var sensorTempC: Double? = null
-    private var settings: SweatSettings = SweatSettings()
+    // Cached rather than re-read. recombine() runs on every temperature sample, and
+    // the device stream dithers enough that distinctUntilChanged filters little, so
+    // reading through to DataStore here meant roughly one disk read per second for
+    // the whole ride.
+    @Volatile private var sensorTempC: Double? = null
+    @Volatile private var settings: SweatSettings = SweatSettings()
+    @Volatile private var weather: WeatherSnapshot? = null
     private var lastFetchLat: Double? = null
     private var lastFetchLon: Double? = null
 
@@ -56,7 +60,12 @@ class EnvironmentSource(
             }
         }
         scope.launch { observeSensorTemperature() }
-        scope.launch { store.weatherFlow().collect { recombine(it) } }
+        scope.launch {
+            store.weatherFlow().collect {
+                weather = it
+                recombine()
+            }
+        }
         scope.launch { refreshLoop() }
     }
 
@@ -76,8 +85,7 @@ class EnvironmentSource(
             }
     }
 
-    private suspend fun recombine(explicit: WeatherSnapshot? = null) {
-        val weather = explicit ?: store.weatherFlow().first()
+    private fun recombine() {
         _environment.value = EnvironmentResolver.resolve(
             weather = weather,
             sensorTempC = sensorTempC,
@@ -98,16 +106,16 @@ class EnvironmentSource(
                 client.fetch(position.first, position.second)?.let { snapshot ->
                     lastFetchLat = position.first
                     lastFetchLon = position.second
+                    // Saving publishes through weatherFlow, which recombines.
                     store.saveWeather(snapshot)
-                    recombine(snapshot)
                 }
             }
             delay(REFRESH_INTERVAL_MS)
         }
     }
 
-    private suspend fun shouldRefetch(position: Pair<Double, Double>): Boolean {
-        val cached = store.weatherFlow().first() ?: return true
+    private fun shouldRefetch(position: Pair<Double, Double>): Boolean {
+        val cached = weather ?: return true
         if (cached.isStale(System.currentTimeMillis())) return true
         val lat = lastFetchLat ?: return true
         val lon = lastFetchLon ?: return true

@@ -56,11 +56,19 @@ class SweatEngine(
     private val _snapshot = MutableStateFlow<SweatSnapshot?>(null)
     val snapshot: StateFlow<SweatSnapshot?> = _snapshot.asStateFlow()
 
-    private var power: Double? = null
-    private var speed: Double? = null
-    private var heartRate: Double? = null
-    private var userProfile: UserProfile? = null
-    private var rideState: RideState = RideState.Idle
+    // These are each written by one collector coroutine and read by the tick loop,
+    // all running on the multi-threaded Dispatchers.IO pool. Without @Volatile there
+    // is no happens-before edge between the write and the read, so the tick loop may
+    // observe a stale value indefinitely. Every access is a plain read or a plain
+    // write of a reference or boxed value, never a read-modify-write, so volatile
+    // visibility is sufficient and no lock is required.
+    @Volatile private var power: Double? = null
+    @Volatile private var speed: Double? = null
+    @Volatile private var heartRate: Double? = null
+    @Volatile private var userProfile: UserProfile? = null
+    @Volatile private var rideState: RideState = RideState.Idle
+
+    // Touched only by the ride-state collector and the tick loop respectively.
     private var wasRecording = false
     private var lastPersistMs = 0L
     private var lastAlertedStatus = HydrationStatus.OK
@@ -70,7 +78,7 @@ class SweatEngine(
      * touches settings twice per pass, so reading through to DataStore each time
      * would mean two disk reads per second for the entire ride.
      */
-    private var settings: SweatSettings = SweatSettings()
+    @Volatile private var settings: SweatSettings = SweatSettings()
 
     fun start() {
         scope.launch { store.settingsFlow().collect { settings = it } }
@@ -104,12 +112,12 @@ class SweatEngine(
         karooSystem.consumerFlow<RideState>().collect { state ->
             rideState = state
             when (state) {
-                is RideState.Recording -> {
-                    if (!wasRecording && accumulator.state.ridingTimeMs == 0L) {
-                        accumulator.reset()
-                    }
-                    wasRecording = true
-                }
+                // Nothing to do on entering Recording. A new ride is reset when the
+                // previous one ends, in the Idle branch below. Resetting here would
+                // clobber state restored from disk when the service is killed and
+                // restarted mid-ride, which is precisely the case persistence exists
+                // to handle.
+                is RideState.Recording -> wasRecording = true
 
                 is RideState.Idle -> {
                     if (wasRecording) {

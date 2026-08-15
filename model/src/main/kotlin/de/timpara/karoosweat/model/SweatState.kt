@@ -163,7 +163,8 @@ class SweatAccumulator(initial: SweatState = SweatState()) {
     }
 
     private fun smoothedRate(): Double {
-        if (window.size < 2) return window.lastOrNull()?.second?.let { 0.0 } ?: 0.0
+        // A single sample carries no interval, so no rate can be derived from it.
+        if (window.size < 2) return 0.0
         val spanMs = window.last().first - window.first().first
         if (spanMs <= 0L) return 0.0
         val total = window.sumOf { it.second }
