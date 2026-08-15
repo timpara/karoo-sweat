@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ExtensionInfo
+    id="sweat"
+    displayName="@string/extension_name"
+    icon="@drawable/ic_sweat"
+    scansDevices="false"
+    fitFile="true">
+
+    <DataType
+        typeId="hydration"
+        displayName="@string/dt_hydration"
+        description="@string/dt_hydration_desc"
+        graphical="true"
+        icon="@drawable/ic_sweat" />
+    <DataType
+        typeId="drink-target"
+        displayName="@string/dt_drink_target"
+        description="@string/dt_drink_target_desc"
+        graphical="false"
+        icon="@drawable/ic_sweat" />
+    <DataType
+        typeId="sweat-loss"
+        displayName="@string/dt_sweat_loss"
+        description="@string/dt_sweat_loss_desc"
+        graphical="false"
+        icon="@drawable/ic_sweat" />
+    <DataType
+        typeId="sweat-rate"
+        displayName="@string/dt_sweat_rate"
+        description="@string/dt_sweat_rate_desc"
+        graphical="false"
+        icon="@drawable/ic_sweat" />
+    <DataType
+        typeId="body-loss"
+        displayName="@string/dt_body_loss"
+        description="@string/dt_body_loss_desc"
+        graphical="false"
+        icon="@drawable/ic_sweat" />
+</ExtensionInfo>

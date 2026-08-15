@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Karoo Sweat</string>
+    <string name="extension_name">Sweat</string>
+
+    <string name="dt_hydration">Hydration</string>
+    <string name="dt_hydration_desc">Drink target, sweat rate and projected body mass loss</string>
+    <string name="dt_drink_target">Drink by now</string>
+    <string name="dt_drink_target_desc">How much you should have drunk so far</string>
+    <string name="dt_sweat_loss">Sweat loss</string>
+    <string name="dt_sweat_loss_desc">Cumulative estimated sweat loss</string>
+    <string name="dt_sweat_rate">Sweat rate</string>
+    <string name="dt_sweat_rate_desc">Current estimated sweat rate</string>
+    <string name="dt_body_loss">Body mass lost</string>
+    <string name="dt_body_loss_desc">Projected body mass loss if you drink nothing</string>
+</resources>

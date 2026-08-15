@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="de.timpara.karoosweat.model.ReferenceTableTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-15T11:50:02" hostname="DESKTOP-RVIUMLK" time="0.041">
+  <properties/>
+  <testcase name="print reference table" classname="de.timpara.karoosweat.model.ReferenceTableTest" time="0.041"/>
+  <system-out><![CDATA[
+Sweat rate (ml/h) - 75 kg / 178 cm rider, 0.35 clo, GE 0.22
+==============================================================================
+Power  Speed   Temp   RH          Sweat Dry loss     Wet Note
+------------------------------------------------------------------------------
+120    22      5      70             90      721    0.00 
+150    25      10     60             95      632    0.00 
+200    28      18     55            397      451    0.12 
+250    30      25     50           1316      275    0.37 
+250    8       25     50           2320      171    0.85 
+250    30      32     40           1959       87    0.50 
+250    30      32     85           2500       87    1.00 UNCOMPENSABLE
+200    10      35     60           2500        5    1.00 UNCOMPENSABLE
+300    34      28     45           2045      205    0.50 
+180    26      22     70            566      337    0.21 
+==============================================================================
+After 2 h at 250 W / 25 C / 50% RH: sweat 2632 ml, drink target 2000 ml, body mass loss 3.5%, status CRITICAL
+
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

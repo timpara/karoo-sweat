@@ -1,0 +1,6 @@
+<resources>
+    <color name="hydration_ok">#FF2E7D32</color>
+    <color name="hydration_warn">#FFEF6C00</color>
+    <color name="hydration_critical">#FFC62828</color>
+    <color name="alert_text">#FFFFFFFF</color>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="de.timpara.karoosweat.model.PsychrometricsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-08-15T11:50:02" hostname="DESKTOP-RVIUMLK" time="0.001">
+  <properties/>
+  <testcase name="humidity out of range is clamped" classname="de.timpara.karoosweat.model.PsychrometricsTest" time="0.001"/>
+  <testcase name="dew point equals air temperature at saturation" classname="de.timpara.karoosweat.model.PsychrometricsTest" time="0.0"/>
+  <testcase name="ambient vapour pressure scales with relative humidity" classname="de.timpara.karoosweat.model.PsychrometricsTest" time="0.0"/>
+  <testcase name="dew point is below air temperature when unsaturated" classname="de.timpara.karoosweat.model.PsychrometricsTest" time="0.0"/>
+  <testcase name="saturation vapour pressure matches reference values" classname="de.timpara.karoosweat.model.PsychrometricsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
