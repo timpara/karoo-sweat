@@ -33,6 +33,10 @@ jobs:
         run: |
           python3 scripts/render_icon.py
           git diff --exit-code -- docs/icon.png
+      - name: Check the release manifest matches the karoo-ext contract
+        # Karoo System deserialises this into a @Serializable Kotlin class, so a
+        # wrong type here fails on the rider's phone rather than in our build.
+        run: python3 scripts/check_manifest.py manifest.template.json
       - name: Run model tests
         run: ./gradlew :model:test
       - name: Print reference table
@@ -99,6 +103,7 @@ jobs:
           sed -e "s/__VERSION__/$VERSION/" \
               -e "s/__VERSION_CODE__/$BUILD_NUMBER/" \
               manifest.template.json > manifest.json
+          python3 scripts/check_manifest.py --rendered manifest.json
           cat manifest.json
 
       - uses: actions/upload-artifact@v7
