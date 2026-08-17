@@ -6,5 +6,6 @@
   "latestVersion": "__VERSION__",
   "latestVersionCode": __VERSION_CODE__,
   "developer": "timpara",
-  "description": "Estimates sweat loss from a physiological heat-balance model and shows how much you should have drunk by now, from power, speed, temperature and humidity. Open the app once after installing, or the data fields will not appear. Humidity is fetched over the network, so the Karoo needs its companion phone in range at least once per ride; until then the field shows 'no RH' and uses your configured fallback. Estimates are uncalibrated out of the box and can be off by 30% until you check them against a weigh-in."
+  "description": "Estimates sweat loss from a physiological heat-balance model and shows how much you should have drunk by now, from power, speed, temperature and humidity. Open the app once after installing, or the data fields will not appear. Humidity is fetched over the network, so the Karoo needs its companion phone in range at least once per ride; until then the field shows 'no RH' and uses your configured fallback. By default the drink target stays at zero for the first part of a ride, on purpose: losing up to about 1.5% of body mass costs you nothing, and drinking more than you sweat is riskier than a small deficit. Switch to proportional replacement in settings if you prefer to drink steadily. Estimates are uncalibrated out of the box and can be off by 30% until you check them against a weigh-in.",
+  "tags": ["health", "performance"]
 }
