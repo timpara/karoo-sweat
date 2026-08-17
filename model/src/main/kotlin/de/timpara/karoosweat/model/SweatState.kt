@@ -82,6 +82,15 @@ enum class HydrationStatus { OK, WARN, CRITICAL }
 data class SweatState(
     /** Cumulative estimated sweat loss in ml since the ride started. */
     val cumulativeSweatMl: Double = 0.0,
+    /**
+     * Cumulative estimated sodium loss in mg since the ride started.
+     *
+     * Integrated alongside the fluid rather than derived from it at read time,
+     * because sweat sodium concentration depends on the sweat rate at the moment
+     * the sweat was produced. A rider who spent an hour cruising and an hour
+     * climbing did not lose sodium at the average of the two.
+     */
+    val cumulativeSodiumMg: Double = 0.0,
     /** Milliseconds spent actively recording (excludes paused time). */
     val ridingTimeMs: Long = 0L,
     /** Most recent instantaneous sweat rate in ml/h. */
@@ -145,7 +154,16 @@ data class SweatState(
  * and no I/O, so that ride lifecycle behaviour (pause, resume, restart, restore from
  * disk) can be tested exhaustively and deterministically.
  */
-class SweatAccumulator(initial: SweatState = SweatState()) {
+class SweatAccumulator(
+    initial: SweatState = SweatState(),
+    /**
+     * Sodium concentration is a rider trait, so it is needed at integration time.
+     * Held as a var rather than a constructor-only value because the rider can
+     * change the setting mid-ride, and the alternative is rebuilding the
+     * accumulator and losing the running total.
+     */
+    var electrolytePolicy: ElectrolytePolicy = ElectrolytePolicy(),
+) {
 
     var state: SweatState = initial
         private set
@@ -181,6 +199,7 @@ class SweatAccumulator(initial: SweatState = SweatState()) {
 
         val rate = result?.sweatRateMlPerHour ?: 0.0
         val added = rate * (deltaMs / 3_600_000.0)
+        val addedSodium = sodiumLossMg(electrolytePolicy, added, rate)
 
         window.addLast(nowMs to added)
         val cutoff = nowMs - ROLLING_WINDOW_MS
@@ -188,6 +207,7 @@ class SweatAccumulator(initial: SweatState = SweatState()) {
 
         state = state.copy(
             cumulativeSweatMl = state.cumulativeSweatMl + added,
+            cumulativeSodiumMg = state.cumulativeSodiumMg + addedSodium,
             ridingTimeMs = state.ridingTimeMs + deltaMs,
             currentRateMlPerHour = smoothedRate(),
             wettedness = result?.skinWettedness ?: state.wettedness,

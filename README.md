@@ -31,9 +31,11 @@ mass loss has passed 2%.*
 | **Sweat loss** | numeric | Cumulative estimated sweat loss, ml |
 | **Sweat rate** | numeric | Current sweat rate, ml/h |
 | **Body mass lost** | numeric | Projected % body mass lost if you drink nothing |
+| **Sodium lost** | numeric | Cumulative estimated sodium loss, mg |
+| **Sodium by now** | numeric | How much sodium you should have taken so far, mg |
 
-Sweat loss, sweat rate and drink target are also written into the recorded FIT file
-as developer fields, so you can verify the model after the ride.
+Sweat loss, sweat rate, drink target and both sodium figures are written into the
+recorded FIT file as developer fields, so you can verify the model after the ride.
 
 ## Installation
 
@@ -134,6 +136,52 @@ you prefer to drink steadily or you know you tolerate fluid well.
 
 Neither mode covers post-ride rehydration, where the picture genuinely does invert:
 between back-to-back days you should replace 125–150% of the deficit, with sodium.
+
+### Sodium, because sweat is not distilled water
+
+Fluid is only half of it. The failure that actually hospitalises endurance athletes
+is not dehydration but **exercise-associated hyponatremia**, and its mechanism is
+replacing fluid *without* replacing sodium over many hours until plasma sodium is
+diluted. Any tool that tells you how much to drink and says nothing about sodium is
+answering half the question.
+
+The model tracks sodium loss as sweat volume times sweat sodium concentration,
+integrated at the concentration in force at the time rather than derived from the
+ride total, because concentration depends on the sweat rate at the moment the sweat
+was produced. An hour cruising plus an hour climbing is not the average of the two.
+
+Concentration comes from a rider setting, not from physics:
+
+- Whole-body sweat sodium spans roughly **10–90 mmol/l** between riders. It is
+  strongly heritable, only modestly reduced by heat acclimation, and cannot be
+  inferred from power, temperature or humidity. Three bands are offered — light
+  (25), typical (40), salty (60 mmol/l) — and if you have had a patch test you can
+  enter the measured value instead.
+- Pick **salty** if your kit dries with visible white residue. That band is not
+  exotic; it describes a large minority of riders.
+- Concentration rises with sweat rate, because the sweat duct reabsorbs sodium at a
+  roughly fixed maximum rate, so faster sweat keeps more of it. The slope used here
+  is deliberately gentle: the between-rider spread dwarfs it, and a steep slope
+  would imply a precision the model does not have. There is a test asserting the
+  rate correction stays smaller than the difference between bands.
+
+What it recommends, and what it deliberately does not:
+
+- **Nothing at all under 90 minutes** (adjustable). Short rides do not need
+  electrolytes, and pretending otherwise is how sachets get sold to people doing an
+  hour in the cold. The loss is still displayed; it is the *advice* that is withheld.
+- **Half your losses by default**, on the same reasoning as fluid: total body sodium
+  is large relative to what one ride removes, and normal food restores it. The point
+  is not to break even, it is to keep what you drink from diluting what is left.
+- **Expressed as a concentration** against the fluid you were told to drink, because
+  that is the number on a drink mix label and therefore the only actionable form.
+- **Above ~1500 mg/l it tells you to take sodium separately** rather than mixing a
+  stronger bottle, since an unpalatable drink is one you stop drinking, which trades
+  a sodium problem for a worse fluid one.
+
+The honest limit: sweat sodium is the single least observable input in the whole
+model. Without a patch test the band is a guess, and unlike sweat rate there is no
+bathroom-scale calibration that will pin it down for you.
 
 ### Environmental inputs
 
@@ -291,7 +339,7 @@ two seconds. You do not need a Karoo to improve the part that matters.
 
 **Early, and honest about it.**
 
-- The model is tested (67 unit tests) and its predictions sit inside published
+- The model is tested (101 unit tests) and its predictions sit inside published
   literature ranges.
 - The app installs, launches and survives on an emulator: settings, foreground
   service, persistence (6 instrumented tests) and field rendering all verified.
@@ -306,6 +354,13 @@ Treat the numbers as a well-reasoned estimate, not a measurement.
 - [karoo-ext](https://github.com/hammerheadnav/karoo-ext), Apache 2.0
 - Weather from [Open-Meteo](https://open-meteo.com), used under their generous
   non-commercial terms
+- **Claude Opus** (Anthropic), used through [opencode](https://opencode.ai), which
+  wrote a substantial share of this project: the partitional calorimetry
+  implementation, the hydration and sodium models, the test suite, the CI pipeline
+  and most of this document. The physiological reasoning behind the design choices —
+  what to model, what to refuse to model, and where to stop — came out of that
+  collaboration too, and the arguments were better for having been challenged in
+  both directions.
 
 ## Licence
 

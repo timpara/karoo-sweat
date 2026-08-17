@@ -10,6 +10,10 @@
     <string name="dt_sweat_loss_desc">Cumulative estimated sweat loss</string>
     <string name="dt_sweat_rate">Sweat rate</string>
     <string name="dt_sweat_rate_desc">Current estimated sweat rate</string>
+    <string name="dt_sodium_loss">Sodium lost</string>
+    <string name="dt_sodium_loss_desc">Cumulative estimated sodium loss in sweat</string>
+    <string name="dt_sodium_target">Sodium by now</string>
+    <string name="dt_sodium_target_desc">How much sodium you should have taken so far</string>
     <string name="dt_body_loss">Body mass lost</string>
     <string name="dt_body_loss_desc">Projected body mass loss if you drink nothing</string>
 </resources>
