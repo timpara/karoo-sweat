@@ -24,7 +24,9 @@ class SettingsSerializationTest {
             grossEfficiency = 0.235,
             clothingCloValue = 0.7,
             sweatMultiplier = 1.25,
+            targetMode = HydrationTargetMode.PROPORTIONAL,
             replacementFraction = 0.9,
+            allowableDeficitFraction = 0.02,
             temperatureSource = TemperatureSource.DEVICE_SENSOR,
             overrideMassKg = 81.5,
             alertsEnabled = false,
@@ -105,12 +107,26 @@ class SettingsSerializationTest {
     @Test
     fun `settings map onto the hydration policy`() {
         val settings = SweatSettings(
+            targetMode = HydrationTargetMode.PROPORTIONAL,
             replacementFraction = 0.65,
+            allowableDeficitFraction = 0.01,
             gutAbsorptionCapMlPerHour = 750.0,
         )
         val policy = settings.toPolicy()
+        assertEquals(HydrationTargetMode.PROPORTIONAL, policy.targetMode)
         assertEquals(0.65, policy.replacementFraction, 1e-9)
+        assertEquals(0.01, policy.allowableDeficitFraction, 1e-9)
         assertEquals(750.0, policy.gutAbsorptionCapMlPerHour, 1e-9)
+    }
+
+    @Test
+    fun `a payload predating the target mode decodes to the deficit default`() {
+        // Riders upgrading from a build that only had a replacement fraction get the
+        // evidence-based default rather than an unset enum.
+        val old = """{"heightCm":180.0,"replacementFraction":0.8}"""
+        val decoded = json.decodeFromString<SweatSettings>(old)
+        assertEquals(HydrationTargetMode.DEFICIT, decoded.targetMode)
+        assertEquals(0.015, decoded.allowableDeficitFraction, 1e-9)
     }
 
     @Test

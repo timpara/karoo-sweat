@@ -13,6 +13,9 @@ class SweatAccumulatorTest {
 
     private val rider = RiderProfile(massKg = 75.0, heightCm = 178.0)
     private val policy = HydrationPolicy()
+    private val proportional =
+        HydrationPolicy(targetMode = HydrationTargetMode.PROPORTIONAL)
+    private val deficit = HydrationPolicy(targetMode = HydrationTargetMode.DEFICIT)
 
     /** A fixed 1000 ml/h evaluation, so accrual arithmetic is trivial to verify. */
     private val oneLitrePerHour = HeatBalanceResult(
@@ -161,23 +164,75 @@ class SweatAccumulatorTest {
     // --- Hydration policy ---------------------------------------------------------
 
     @Test
-    fun `recommended intake applies the replacement fraction`() {
+    fun `proportional mode applies the replacement fraction`() {
         val state = SweatState(cumulativeSweatMl = 1000.0, ridingTimeMs = 3_600_000L)
-        assertEquals(800.0, state.recommendedIntakeMl(policy), 1e-9)
+        assertEquals(800.0, state.recommendedIntakeMl(rider, proportional), 1e-9)
     }
 
     @Test
-    fun `recommended intake is capped by gut absorption`() {
+    fun `proportional mode is capped by gut absorption`() {
         // Sweating 2.5 l/h for an hour; the gut can only take 1 l/h, so recommending
         // 2 l would be actively harmful advice.
         val state = SweatState(cumulativeSweatMl = 2500.0, ridingTimeMs = 3_600_000L)
-        assertEquals(1000.0, state.recommendedIntakeMl(policy), 1e-9)
+        assertEquals(1000.0, state.recommendedIntakeMl(rider, proportional), 1e-9)
     }
 
     @Test
     fun `gut cap scales with ride duration`() {
         val state = SweatState(cumulativeSweatMl = 5000.0, ridingTimeMs = 7_200_000L)
-        assertEquals(2000.0, state.recommendedIntakeMl(policy), 1e-9)
+        assertEquals(2000.0, state.recommendedIntakeMl(rider, proportional), 1e-9)
+    }
+
+    @Test
+    fun `deficit mode recommends nothing inside the allowance`() {
+        // 1.5% of 75 kg is 1125 ml, so a litre lost is not yet worth replacing.
+        val state = SweatState(cumulativeSweatMl = 1000.0, ridingTimeMs = 3_600_000L)
+        assertEquals(0.0, state.recommendedIntakeMl(rider, deficit), 1e-9)
+    }
+
+    @Test
+    fun `deficit mode tracks sweat one for one past the allowance`() {
+        val state = SweatState(cumulativeSweatMl = 2000.0, ridingTimeMs = 7_200_000L)
+        assertEquals(875.0, state.recommendedIntakeMl(rider, deficit), 1e-9)
+    }
+
+    @Test
+    fun `deficit allowance scales with rider mass`() {
+        val state = SweatState(cumulativeSweatMl = 2000.0, ridingTimeMs = 7_200_000L)
+        val light = RiderProfile(massKg = 55.0, heightCm = 165.0)
+        // 1.5% of 55 kg is only 825 ml, so the smaller rider is told to drink more.
+        assertEquals(1175.0, state.recommendedIntakeMl(light, deficit), 1e-9)
+    }
+
+    @Test
+    fun `deficit mode never recommends a negative intake`() {
+        val state = SweatState(cumulativeSweatMl = 10.0, ridingTimeMs = 60_000L)
+        assertEquals(0.0, state.recommendedIntakeMl(rider, deficit), 1e-9)
+    }
+
+    @Test
+    fun `deficit mode asks for less than proportional on a typical ride`() {
+        // The whole point: 2 h at 1 l/h should not have the rider drinking 1.6 l.
+        val state = SweatState(cumulativeSweatMl = 2000.0, ridingTimeMs = 7_200_000L)
+        assertTrue(
+            state.recommendedIntakeMl(rider, deficit) <
+                state.recommendedIntakeMl(rider, proportional),
+        )
+    }
+
+    @Test
+    fun `deficit mode still respects the gut cap`() {
+        // 2.5 l/h for two hours: after the 1125 ml allowance the target is 3875 ml,
+        // but the gut has only had time to take 2 l.
+        val state = SweatState(cumulativeSweatMl = 5000.0, ridingTimeMs = 7_200_000L)
+        assertEquals(2000.0, state.recommendedIntakeMl(rider, deficit), 1e-9)
+    }
+
+    @Test
+    fun `following the deficit target keeps the rider under the warning threshold`() {
+        val state = SweatState(cumulativeSweatMl = 3000.0, ridingTimeMs = 7_200_000L)
+        val netLossMl = state.cumulativeSweatMl - state.recommendedIntakeMl(rider, deficit)
+        assertTrue(netLossMl / 1000.0 / rider.massKg < deficit.warnBodyMassLossFraction)
     }
 
     @Test

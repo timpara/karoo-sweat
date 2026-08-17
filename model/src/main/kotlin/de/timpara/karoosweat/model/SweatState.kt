@@ -3,19 +3,58 @@ package de.timpara.karoosweat.model
 import kotlinx.serialization.Serializable
 
 /**
+ * How a sweat loss estimate is converted into a drinking target.
+ */
+enum class HydrationTargetMode {
+    /**
+     * Replace a fixed fraction of everything lost, from the first millilitre.
+     *
+     * Simple and familiar, and what most hydration guidance describes, but it asks
+     * the rider to drink during the opening hour when they are nowhere near a
+     * meaningful deficit.
+     */
+    PROPORTIONAL,
+
+    /**
+     * Drink nothing until the projected deficit approaches the threshold at which
+     * dehydration actually costs performance, then track sweat rate 1:1 to hold the
+     * rider there.
+     *
+     * This is closer to what the evidence supports. Losing up to about 2% of body
+     * mass has no reliable performance cost, and scale-measured loss overstates the
+     * true body-water deficit anyway: substrate oxidation removes mass that was
+     * never water, oxidation produces metabolic water, and glycogen is stored with
+     * roughly three times its own mass in water that is liberated as it is burned.
+     * Drinking more than you sweat is also the direct cause of exercise-associated
+     * hyponatremia, which is far more dangerous than a 2% deficit.
+     */
+    DEFICIT,
+}
+
+/**
  * User preferences governing how an estimated sweat loss is turned into a drinking
  * recommendation.
  */
 @Serializable
 data class HydrationPolicy(
+    /** Which targeting strategy [SweatState.recommendedIntakeMl] should apply. */
+    val targetMode: HydrationTargetMode = HydrationTargetMode.DEFICIT,
     /**
      * Fraction of sweat loss to replace during the ride, 0..1.
      *
-     * Replacing 100% is rarely necessary or comfortable. Losing up to about 2% of
-     * body mass has no meaningful performance cost for most riders, so a target
-     * around 0.8 keeps the rider well inside that band without over-drinking.
+     * Only used by [HydrationTargetMode.PROPORTIONAL]. Replacing 100% is rarely
+     * necessary or comfortable, so a target around 0.8 keeps the rider well inside
+     * the 2% band without over-drinking.
      */
     val replacementFraction: Double = 0.8,
+    /**
+     * Body mass loss fraction the rider is content to carry, e.g. 0.015 for 1.5%.
+     *
+     * Only used by [HydrationTargetMode.DEFICIT]. Deliberately set below
+     * [warnBodyMassLossFraction] so that following the recommendation keeps the
+     * field out of its warning state rather than parking the rider on the boundary.
+     */
+    val allowableDeficitFraction: Double = 0.015,
     /**
      * Ceiling on recommended drinking rate in ml/h, representing gastric emptying
      * and intestinal absorption limits. Recommending more than the gut can absorb
@@ -58,11 +97,27 @@ data class SweatState(
 ) {
     val ridingHours: Double get() = ridingTimeMs / 3_600_000.0
 
-    /** Recommended cumulative intake in ml, honouring both replacement and gut cap. */
-    fun recommendedIntakeMl(policy: HydrationPolicy): Double {
-        val byReplacement = cumulativeSweatMl * policy.replacementFraction
+    /**
+     * Recommended cumulative intake in ml, honouring the target mode and the gut cap.
+     *
+     * The gut cap is applied last and to the cumulative figure, so a rider who has
+     * been told to drink nothing for the first hour still accrues absorption
+     * capacity during it. Without that, deficit mode could never catch up on a hot
+     * ride: the cap would bite exactly when the target starts rising.
+     */
+    fun recommendedIntakeMl(rider: RiderProfile, policy: HydrationPolicy): Double {
+        val byMode = when (policy.targetMode) {
+            HydrationTargetMode.PROPORTIONAL ->
+                cumulativeSweatMl * policy.replacementFraction
+
+            HydrationTargetMode.DEFICIT -> {
+                val allowanceMl =
+                    policy.allowableDeficitFraction * rider.massKg * 1000.0
+                cumulativeSweatMl - allowanceMl
+            }
+        }
         val byGutCapacity = policy.gutAbsorptionCapMlPerHour * ridingHours
-        return minOf(byReplacement, byGutCapacity).coerceAtLeast(0.0)
+        return minOf(byMode, byGutCapacity).coerceAtLeast(0.0)
     }
 
     /**

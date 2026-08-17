@@ -24,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import de.timpara.karoosweat.model.HydrationTargetMode
 import de.timpara.karoosweat.model.SweatSettings
 import de.timpara.karoosweat.util.SweatStore
 import kotlinx.coroutines.launch
@@ -127,12 +128,53 @@ private fun SettingsScreen(store: SweatStore) {
         HorizontalDivider()
         Text("Drinking target", style = MaterialTheme.typography.titleMedium)
 
-        SliderSetting(
-            label = "Replace fraction of sweat",
-            value = settings.replacementFraction,
-            range = 0.5f..1.0f,
-            format = { "%.0f %%".format(it * 100) },
-        ) { update { s -> s.copy(replacementFraction = it) } }
+        val deficitMode = settings.targetMode == HydrationTargetMode.DEFICIT
+        ToggleSetting(
+            label = if (deficitMode) {
+                "Hold below a deficit threshold"
+            } else {
+                "Replace a fixed fraction of sweat"
+            },
+            checked = deficitMode,
+        ) { on ->
+            update { s ->
+                s.copy(
+                    targetMode = if (on) {
+                        HydrationTargetMode.DEFICIT
+                    } else {
+                        HydrationTargetMode.PROPORTIONAL
+                    },
+                )
+            }
+        }
+        Text(
+            if (deficitMode) {
+                "Drink nothing until you approach the deficit that actually costs " +
+                    "performance, then match your sweat rate to sit there. Asks for " +
+                    "less fluid, and follows the evidence more closely."
+            } else {
+                "Replace a set share of everything you lose, from the first " +
+                    "millilitre. Simple and familiar, but asks you to drink during " +
+                    "the opening hour when you are nowhere near a real deficit."
+            },
+            style = MaterialTheme.typography.bodySmall,
+        )
+
+        if (deficitMode) {
+            SliderSetting(
+                label = "Deficit to carry",
+                value = settings.allowableDeficitFraction,
+                range = 0f..0.02f,
+                format = { "%.1f %% of body mass".format(it * 100) },
+            ) { update { s -> s.copy(allowableDeficitFraction = it) } }
+        } else {
+            SliderSetting(
+                label = "Replace fraction of sweat",
+                value = settings.replacementFraction,
+                range = 0.5f..1.0f,
+                format = { "%.0f %%".format(it * 100) },
+            ) { update { s -> s.copy(replacementFraction = it) } }
+        }
 
         SliderSetting(
             label = "Max absorbable rate",

@@ -109,7 +109,7 @@ private fun HarnessScreen() {
             weatherAgeMs = 60_000L,
         ),
         status = state.status(rider, policy),
-        recommendedIntakeMl = state.recommendedIntakeMl(policy),
+        recommendedIntakeMl = state.recommendedIntakeMl(rider, policy),
         bodyMassLossFraction = state.bodyMassLossFraction(rider),
     )
 
