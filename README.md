@@ -354,13 +354,8 @@ Treat the numbers as a well-reasoned estimate, not a measurement.
 - [karoo-ext](https://github.com/hammerheadnav/karoo-ext), Apache 2.0
 - Weather from [Open-Meteo](https://open-meteo.com), used under their generous
   non-commercial terms
-- **Claude Opus** (Anthropic), used through [opencode](https://opencode.ai), which
-  wrote a substantial share of this project: the partitional calorimetry
-  implementation, the hydration and sodium models, the test suite, the CI pipeline
-  and most of this document. The physiological reasoning behind the design choices —
-  what to model, what to refuse to model, and where to stop — came out of that
-  collaboration too, and the arguments were better for having been challenged in
-  both directions.
+- **Claude Opus** (Anthropic), via [opencode](https://opencode.ai), which wrote much
+  of the model, tests and documentation
 
 ## Licence
 
