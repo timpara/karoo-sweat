@@ -33,7 +33,12 @@ data class SweatSettings(
     val grossEfficiency: Double = 0.22,
     val clothingCloValue: Double = 0.35,
     val sweatMultiplier: Double = 1.0,
+    /** Strategy for turning sweat loss into a drinking target. */
+    val targetMode: HydrationTargetMode = HydrationTargetMode.DEFICIT,
+    /** Used by [HydrationTargetMode.PROPORTIONAL] only. */
     val replacementFraction: Double = 0.8,
+    /** Used by [HydrationTargetMode.DEFICIT] only. */
+    val allowableDeficitFraction: Double = 0.015,
     val gutAbsorptionCapMlPerHour: Double = 1000.0,
     val temperatureSource: TemperatureSource = TemperatureSource.WEATHER_API,
     /** Used only when no weather data has ever been fetched and no sensor reports. */
@@ -47,7 +52,9 @@ data class SweatSettings(
     val alertsEnabled: Boolean = true,
 ) {
     fun toPolicy() = HydrationPolicy(
+        targetMode = targetMode,
         replacementFraction = replacementFraction,
+        allowableDeficitFraction = allowableDeficitFraction,
         gutAbsorptionCapMlPerHour = gutAbsorptionCapMlPerHour,
     )
 

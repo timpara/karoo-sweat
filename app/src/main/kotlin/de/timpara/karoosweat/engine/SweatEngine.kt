@@ -212,7 +212,7 @@ class SweatEngine(
             rider = rider,
             environment = environmentSource.environment.value,
             status = status,
-            recommendedIntakeMl = state.recommendedIntakeMl(policy),
+            recommendedIntakeMl = state.recommendedIntakeMl(rider, policy),
             bodyMassLossFraction = state.bodyMassLossFraction(rider),
         )
 

@@ -73,7 +73,7 @@ class ReferenceTableTest {
                     "drink target %.0f ml, body mass loss %.1f%%, status %s"
                 ).format(
                 acc.state.cumulativeSweatMl,
-                acc.state.recommendedIntakeMl(policy),
+                acc.state.recommendedIntakeMl(rider, policy),
                 acc.state.bodyMassLossFraction(rider) * 100,
                 acc.state.status(rider, policy),
             ),
