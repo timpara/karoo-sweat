@@ -8,6 +8,8 @@ import de.timpara.karoosweat.model.HeatBalance
 import de.timpara.karoosweat.model.HeatBalanceResult
 import de.timpara.karoosweat.model.HydrationStatus
 import de.timpara.karoosweat.model.RiderProfile
+import de.timpara.karoosweat.model.SodiumAdvice
+import de.timpara.karoosweat.model.sodiumAdvice
 import de.timpara.karoosweat.model.SweatAccumulator
 import de.timpara.karoosweat.model.SweatState
 import de.timpara.karoosweat.util.SweatStore
@@ -34,6 +36,7 @@ data class SweatSnapshot(
     val status: HydrationStatus,
     val recommendedIntakeMl: Double,
     val bodyMassLossFraction: Double,
+    val sodium: SodiumAdvice,
 )
 
 /**
@@ -146,6 +149,9 @@ class SweatEngine(
         val now = System.currentTimeMillis()
         val recording = rideState is RideState.Recording
         val result = evaluate()
+        // Pushed in on every tick so a mid-ride change to the rider's sodium band
+        // applies from that moment on, without disturbing what is already accrued.
+        accumulator.electrolytePolicy = settings.toElectrolytePolicy()
         accumulator.tick(now, result, recording)
 
         if (recording && now - lastPersistMs > PERSIST_INTERVAL_MS) {
@@ -207,13 +213,21 @@ class SweatEngine(
         val state = accumulator.state
         val status = state.status(rider, policy)
 
+        val intakeMl = state.recommendedIntakeMl(rider, policy)
+
         _snapshot.value = SweatSnapshot(
             state = state,
             rider = rider,
             environment = environmentSource.environment.value,
             status = status,
-            recommendedIntakeMl = state.recommendedIntakeMl(rider, policy),
+            recommendedIntakeMl = intakeMl,
             bodyMassLossFraction = state.bodyMassLossFraction(rider),
+            sodium = sodiumAdvice(
+                policy = settings.toElectrolytePolicy(),
+                cumulativeSodiumMg = state.cumulativeSodiumMg,
+                recommendedIntakeMl = intakeMl,
+                ridingHours = state.ridingHours,
+            ),
         )
 
         if (settings.alertsEnabled) maybeAlert(status)

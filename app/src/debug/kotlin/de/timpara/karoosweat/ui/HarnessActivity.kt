@@ -35,8 +35,10 @@ import de.timpara.karoosweat.engine.SweatSnapshot
 import de.timpara.karoosweat.model.Conditions
 import de.timpara.karoosweat.model.Environment
 import de.timpara.karoosweat.model.HeatBalance
+import de.timpara.karoosweat.model.ElectrolytePolicy
 import de.timpara.karoosweat.model.HydrationPolicy
 import de.timpara.karoosweat.model.SweatAccumulator
+import de.timpara.karoosweat.model.sodiumAdvice
 import de.timpara.karoosweat.model.SweatSettings
 import io.hammerhead.karooext.models.ViewConfig
 
@@ -111,6 +113,12 @@ private fun HarnessScreen() {
         status = state.status(rider, policy),
         recommendedIntakeMl = state.recommendedIntakeMl(rider, policy),
         bodyMassLossFraction = state.bodyMassLossFraction(rider),
+        sodium = sodiumAdvice(
+            policy = ElectrolytePolicy(),
+            cumulativeSodiumMg = state.cumulativeSodiumMg,
+            recommendedIntakeMl = state.recommendedIntakeMl(rider, policy),
+            ridingHours = state.ridingHours,
+        ),
     )
 
     Column(

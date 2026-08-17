@@ -31,6 +31,18 @@
         graphical="false"
         icon="@drawable/ic_sweat" />
     <DataType
+        typeId="sodium-loss"
+        displayName="@string/dt_sodium_loss"
+        description="@string/dt_sodium_loss_desc"
+        graphical="false"
+        icon="@drawable/ic_sweat" />
+    <DataType
+        typeId="sodium-target"
+        displayName="@string/dt_sodium_target"
+        description="@string/dt_sodium_target_desc"
+        graphical="false"
+        icon="@drawable/ic_sweat" />
+    <DataType
         typeId="body-loss"
         displayName="@string/dt_body_loss"
         description="@string/dt_body_loss_desc"

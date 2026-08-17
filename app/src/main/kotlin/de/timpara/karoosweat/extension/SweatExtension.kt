@@ -10,6 +10,8 @@ import de.timpara.karoosweat.R
 import de.timpara.karoosweat.datatype.BodyLossDataType
 import de.timpara.karoosweat.datatype.DrinkTargetDataType
 import de.timpara.karoosweat.datatype.HydrationDataType
+import de.timpara.karoosweat.datatype.SodiumLossDataType
+import de.timpara.karoosweat.datatype.SodiumTargetDataType
 import de.timpara.karoosweat.datatype.SweatLossDataType
 import de.timpara.karoosweat.datatype.SweatRateDataType
 import de.timpara.karoosweat.engine.EnvironmentSource
@@ -58,6 +60,8 @@ class SweatExtension : KarooExtension(EXTENSION_ID, BuildConfig.VERSION_NAME) {
             SweatRateDataType(EXTENSION_ID, engine),
             DrinkTargetDataType(EXTENSION_ID, engine),
             BodyLossDataType(EXTENSION_ID, engine),
+            SodiumLossDataType(EXTENSION_ID, engine),
+            SodiumTargetDataType(EXTENSION_ID, engine),
             HydrationDataType(EXTENSION_ID, engine),
         )
     }
@@ -111,6 +115,8 @@ class SweatExtension : KarooExtension(EXTENSION_ID, BuildConfig.VERSION_NAME) {
                                     FieldValue(SWEAT_LOSS_FIELD, snapshot.state.cumulativeSweatMl),
                                     FieldValue(SWEAT_RATE_FIELD, snapshot.state.currentRateMlPerHour),
                                     FieldValue(DRINK_TARGET_FIELD, snapshot.recommendedIntakeMl),
+                                    FieldValue(SODIUM_LOSS_FIELD, snapshot.state.cumulativeSodiumMg),
+                                    FieldValue(SODIUM_TARGET_FIELD, snapshot.sodium.targetMg),
                                 ),
                             ),
                         )
@@ -119,6 +125,7 @@ class SweatExtension : KarooExtension(EXTENSION_ID, BuildConfig.VERSION_NAME) {
                             WriteToSessionMesg(
                                 listOf(
                                     FieldValue(SWEAT_LOSS_FIELD, snapshot.state.cumulativeSweatMl),
+                                    FieldValue(SODIUM_LOSS_FIELD, snapshot.state.cumulativeSodiumMg),
                                 ),
                             ),
                         )
@@ -183,6 +190,22 @@ class SweatExtension : KarooExtension(EXTENSION_ID, BuildConfig.VERSION_NAME) {
             fitBaseTypeId = FIT_FLOAT32,
             fieldName = "drink_target",
             units = "ml",
+        )
+
+        // Appended rather than inserted: field definition numbers are the identity
+        // of a developer field, so renumbering the existing three would make old
+        // and new FIT files disagree about what each column means.
+        private val SODIUM_LOSS_FIELD = DeveloperField(
+            fieldDefinitionNumber = 3,
+            fitBaseTypeId = FIT_FLOAT32,
+            fieldName = "sodium_loss",
+            units = "mg",
+        )
+        private val SODIUM_TARGET_FIELD = DeveloperField(
+            fieldDefinitionNumber = 4,
+            fitBaseTypeId = FIT_FLOAT32,
+            fieldName = "sodium_target",
+            units = "mg",
         )
     }
 }

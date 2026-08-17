@@ -40,6 +40,14 @@ data class SweatSettings(
     /** Used by [HydrationTargetMode.DEFICIT] only. */
     val allowableDeficitFraction: Double = 0.015,
     val gutAbsorptionCapMlPerHour: Double = 1000.0,
+    /** The rider's sweat sodium band. See [SweatSodiumClass]. */
+    val sweatSodiumClass: SweatSodiumClass = SweatSodiumClass.TYPICAL,
+    /** Measured sweat sodium in mmol/l from a patch test; supersedes the band. */
+    val measuredSweatSodiumMmolPerLitre: Double? = null,
+    /** Fraction of sodium loss to replace during the ride. */
+    val sodiumReplacementFraction: Double = 0.5,
+    /** Rides shorter than this get no sodium recommendation at all. */
+    val sodiumMinimumDurationMinutes: Double = 90.0,
     val temperatureSource: TemperatureSource = TemperatureSource.WEATHER_API,
     /** Used only when no weather data has ever been fetched and no sensor reports. */
     val fallbackTempC: Double = 20.0,
@@ -71,6 +79,13 @@ data class SweatSettings(
         grossEfficiency = grossEfficiency,
         clothingCloValue = clothingCloValue,
         sweatMultiplier = sweatMultiplier,
+    )
+
+    fun toElectrolytePolicy() = ElectrolytePolicy(
+        sodiumClass = sweatSodiumClass,
+        overrideMmolPerLitre = measuredSweatSodiumMmolPerLitre,
+        replacementFraction = sodiumReplacementFraction,
+        minimumDurationMinutes = sodiumMinimumDurationMinutes,
     )
 
     private companion object {

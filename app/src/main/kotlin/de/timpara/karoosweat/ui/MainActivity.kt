@@ -5,10 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -25,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.timpara.karoosweat.model.HydrationTargetMode
+import de.timpara.karoosweat.model.SweatSodiumClass
 import de.timpara.karoosweat.model.SweatSettings
 import de.timpara.karoosweat.util.SweatStore
 import kotlinx.coroutines.launch
@@ -182,6 +185,49 @@ private fun SettingsScreen(store: SweatStore) {
             range = 500f..1500f,
             format = { "%.0f ml/h".format(it) },
         ) { update { s -> s.copy(gutAbsorptionCapMlPerHour = it) } }
+
+        HorizontalDivider()
+        Text("Electrolytes", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Sweat is not distilled water. Replacing fluid without sodium over " +
+                "many hours dilutes what is left, which is the mechanism behind " +
+                "the one hydration failure that actually hospitalises riders.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+
+        Text(
+            "Sweat saltiness: ${settings.sweatSodiumClass.label}",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Text(
+            "Pick salty if your kit dries with visible white residue. Only a patch " +
+                "test can tell you properly; between riders this varies more than " +
+                "sweat rate does.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SweatSodiumClass.entries.forEach { option ->
+                FilterChip(
+                    selected = settings.sweatSodiumClass == option,
+                    onClick = { update { s -> s.copy(sweatSodiumClass = option) } },
+                    label = { Text(option.label) },
+                )
+            }
+        }
+
+        SliderSetting(
+            label = "Replace fraction of sodium",
+            value = settings.sodiumReplacementFraction,
+            range = 0f..1f,
+            format = { "%.0f %%".format(it * 100) },
+        ) { update { s -> s.copy(sodiumReplacementFraction = it) } }
+
+        SliderSetting(
+            label = "No sodium advice before",
+            value = settings.sodiumMinimumDurationMinutes,
+            range = 30f..180f,
+            format = { "%.0f min".format(it) },
+        ) { update { s -> s.copy(sodiumMinimumDurationMinutes = it) } }
 
         HorizontalDivider()
         Text("Environment", style = MaterialTheme.typography.titleMedium)

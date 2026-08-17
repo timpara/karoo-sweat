@@ -27,6 +27,9 @@ class SettingsSerializationTest {
             targetMode = HydrationTargetMode.PROPORTIONAL,
             replacementFraction = 0.9,
             allowableDeficitFraction = 0.02,
+            sweatSodiumClass = SweatSodiumClass.SALTY,
+            measuredSweatSodiumMmolPerLitre = 58.0,
+            sodiumReplacementFraction = 0.7,
             temperatureSource = TemperatureSource.DEVICE_SENSOR,
             overrideMassKg = 81.5,
             alertsEnabled = false,
@@ -127,6 +130,40 @@ class SettingsSerializationTest {
         val decoded = json.decodeFromString<SweatSettings>(old)
         assertEquals(HydrationTargetMode.DEFICIT, decoded.targetMode)
         assertEquals(0.015, decoded.allowableDeficitFraction, 1e-9)
+    }
+
+    @Test
+    fun `settings map onto the electrolyte policy`() {
+        val settings = SweatSettings(
+            sweatSodiumClass = SweatSodiumClass.SALTY,
+            sodiumReplacementFraction = 0.6,
+            sodiumMinimumDurationMinutes = 120.0,
+        )
+        val policy = settings.toElectrolytePolicy()
+        assertEquals(SweatSodiumClass.SALTY, policy.sodiumClass)
+        assertEquals(0.6, policy.replacementFraction, 1e-9)
+        assertEquals(120.0, policy.minimumDurationMinutes, 1e-9)
+        // Absent a patch test there is no measured value to override the band.
+        assertEquals(null, policy.overrideMmolPerLitre)
+    }
+
+    @Test
+    fun `a payload predating electrolytes decodes to the typical band`() {
+        val old = """{"heightCm":180.0,"sweatMultiplier":1.1}"""
+        val decoded = json.decodeFromString<SweatSettings>(old)
+        assertEquals(SweatSodiumClass.TYPICAL, decoded.sweatSodiumClass)
+        assertEquals(null, decoded.measuredSweatSodiumMmolPerLitre)
+    }
+
+    @Test
+    fun `ride state predating sodium decodes to zero rather than failing`() {
+        // A rider who updates mid-ride keeps their fluid total and starts sodium
+        // from zero, which is wrong but recoverable; failing to decode would zero
+        // the fluid total too.
+        val old = """{"cumulativeSweatMl":1200.0,"ridingTimeMs":3600000}"""
+        val decoded = json.decodeFromString<SweatState>(old)
+        assertEquals(1200.0, decoded.cumulativeSweatMl, 1e-9)
+        assertEquals(0.0, decoded.cumulativeSodiumMg, 1e-9)
     }
 
     @Test

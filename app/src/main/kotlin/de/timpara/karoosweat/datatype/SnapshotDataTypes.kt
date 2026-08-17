@@ -62,6 +62,18 @@ class DrinkTargetDataType(extension: String, engine: SweatEngine) :
     companion object { const val TYPE_ID = "drink-target" }
 }
 
+/** Cumulative estimated sodium loss, in milligrams. */
+class SodiumLossDataType(extension: String, engine: SweatEngine) :
+    SnapshotDataType(extension, TYPE_ID, engine, { it.state.cumulativeSodiumMg }) {
+    companion object { const val TYPE_ID = "sodium-loss" }
+}
+
+/** How much sodium the rider should have taken by now, in milligrams. */
+class SodiumTargetDataType(extension: String, engine: SweatEngine) :
+    SnapshotDataType(extension, TYPE_ID, engine, { it.sodium.targetMg }) {
+    companion object { const val TYPE_ID = "sodium-target" }
+}
+
 /** Projected body mass loss as a percentage, the physiologically meaningful figure. */
 class BodyLossDataType(extension: String, engine: SweatEngine) :
     SnapshotDataType(extension, TYPE_ID, engine, { it.bodyMassLossFraction * 100.0 }) {
