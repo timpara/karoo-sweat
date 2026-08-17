@@ -9,9 +9,9 @@ import de.timpara.karoosweat.model.HeatBalanceResult
 import de.timpara.karoosweat.model.HydrationStatus
 import de.timpara.karoosweat.model.RiderProfile
 import de.timpara.karoosweat.model.SodiumAdvice
-import de.timpara.karoosweat.model.sodiumAdvice
 import de.timpara.karoosweat.model.SweatAccumulator
 import de.timpara.karoosweat.model.SweatState
+import de.timpara.karoosweat.model.sodiumAdvice
 import de.timpara.karoosweat.util.SweatStore
 import de.timpara.karoosweat.util.consumerFlow
 import de.timpara.karoosweat.util.streamDataFlow
