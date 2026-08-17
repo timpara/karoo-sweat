@@ -12,6 +12,11 @@ have drunk by now**.
 No other Karoo extension does this. [nomride](https://github.com/yrkan/nomride) logs
 what you drink and models carbohydrate burn; this one models what you *lose*.
 
+It works on ride one from published heat-balance physiology, with no setup and no
+training period — and then a single bathroom-scale calibration tunes it to your own
+sweat rate. Physics gives you the response to heat, humidity and effort; calibration
+gives you the amplitude that is yours alone.
+
 ![Hydration field](docs/preview-field.png)
 
 *The hydration field rendered at Karoo dimensions. Amber indicates projected body
@@ -71,10 +76,12 @@ adb install -r karoo-sweat.apk
 
 ### Then calibrate it
 
-Out of the box the estimate is uncalibrated and could be off by 30% for you
-specifically. See [Accuracy, honestly](#accuracy-honestly) below. It takes one ride
-and a bathroom scale, and it is the difference between a number you can act on and a
-number that is merely plausible.
+The model works immediately and it is already physically correct in how it responds
+to heat, humidity and effort. Calibration adds the one thing physics cannot know:
+*your* sweat glands, which differ from the next rider's by two- to three-fold. It
+takes one ride and a bathroom scale, it is a single number, and it turns a plausible
+estimate into one you can act on. See
+[Accuracy](#accuracy-physiology-sets-the-shape-you-set-the-scale) below.
 
 ## How the estimate works
 
@@ -95,9 +102,38 @@ bike computer actually has:
    no cooling benefit. Above 1.0 the heat stress is uncompensable and core
    temperature will drift up.
 
-The drink target is sweat loss times a replacement fraction, capped by a gut
-absorption limit, because recommending more fluid than the gut can take is not merely
-useless but actively causes GI distress.
+Both modes are capped by a gut absorption limit, because recommending more fluid
+than the gut can take is not merely useless but actively causes GI distress. The cap
+applies to the cumulative target, so time spent below the threshold still accrues
+absorption capacity.
+
+### The drink target: you do not have to replace what you lost
+
+Two selectable modes, in settings.
+
+**Deficit (default).** Recommends nothing until your projected loss approaches a
+threshold you choose (1.5% of body mass by default), then tracks your sweat rate 1:1
+to hold you there. This is the mode the evidence actually supports:
+
+- Losing up to about 2% of body mass has no reliable performance cost. For a 75 kg
+  rider that is 1.5 L of headroom that never needs replacing mid-ride.
+- Scale-measured mass loss *overstates* the true body-water deficit. You burn
+  substrate, which is mass that was never water; oxidation produces metabolic water;
+  and glycogen is stored with roughly three times its own mass in water, so burning
+  400 g of it liberates about a litre back into circulation. A rider "down 2 kg" is
+  often only 1–1.5 kg down in body water.
+- Drinking more than you sweat is the direct cause of exercise-associated
+  hyponatremia, which is considerably more dangerous than a 2% deficit.
+- In studies where riders are blinded to their hydration state, the classic
+  decrement at 2–3% loss largely fails to reproduce. Much of it appears to be thirst
+  perception rather than cardiovascular impairment.
+
+**Proportional.** Sweat loss times a replacement fraction (0.8 by default), from the
+first millilitre. Familiar, matches most published guidance, and worth choosing if
+you prefer to drink steadily or you know you tolerate fluid well.
+
+Neither mode covers post-ride rehydration, where the picture genuinely does invert:
+between back-to-back days you should replace 125–150% of the deficit, with sodium.
 
 ### Environmental inputs
 
@@ -116,13 +152,39 @@ Falls back to estimating power from heart rate reserve, anchored so that 88% HRR
 to your FTP. This is materially less accurate and the graphical field labels itself
 `HR est` when it is active.
 
-## Accuracy, honestly
+## Accuracy: physiology sets the shape, you set the scale
 
-The *structure* of this model is sound and it responds correctly to intensity,
-temperature, humidity, airspeed, body size and clothing. The *absolute magnitude* for
-any individual rider is uncertain by roughly ±30% until calibrated, because
-individual sweat rates vary two- to three-fold at identical workload in identical
-conditions. No first-principles model can predict that.
+Most hydration tools pick one of two bad options. Either a lookup table that ignores
+physics, or a black-box personalisation that needs weeks of data before it says
+anything at all. karoo-sweat deliberately does both, in the order that makes each one
+work.
+
+**Tier 1 — the physics, working on ride one.** Partitional calorimetry is the same
+framework used in occupational and military heat-stress standards. It responds
+correctly to intensity, temperature, humidity, airspeed, body size and clothing, and
+it *extrapolates*: it will give you a sensible number for a 35 °C climb you have
+never ridden before, because it is solving a heat balance rather than interpolating
+your history. No setup, no training period, no account.
+
+**Tier 2 — the one thing physics cannot know.** Individual sweat rates vary two- to
+three-fold between riders at identical workload in identical conditions. That is a
+property of your sweat glands, not of the environment, so no first-principles model
+can derive it, and the uncalibrated magnitude is uncertain by roughly ±30% for any
+given rider. One ride and a bathroom scale fixes it permanently.
+
+That division of labour is the point. Calibration only has to find a single scalar,
+because the model has already accounted for every effect that varies ride to ride.
+So it converges from one or two rides instead of a season, and it stays valid in
+conditions you never calibrated in — the shape of the response is physics, and only
+the amplitude is yours. A purely empirical model has to relearn every combination of
+heat, humidity and intensity separately; a purely theoretical one never gets your
+amplitude right at all.
+
+The honest limit: calibration fits your sweat *level*, not your personal *sensitivity*
+to heat or humidity. If you are a genuine outlier in how steeply your sweat rate rises
+with temperature, one multiplier will not capture that. Calibrating across two or
+three different temperatures makes this visible — if no single multiplier fits them
+all, you are one of those riders, and the constants below are where to look.
 
 Two constants are frank approximations rather than derived quantities, and are the
 first things to revisit if calibration disagrees:
@@ -135,7 +197,7 @@ first things to revisit if calibration disagrees:
 **Calibrate it.** Weigh yourself nude before and after a ride, add back the fluid you
 drank, and compare with the recorded `sweat_loss` field. Adjust the sweat multiplier
 in settings until they agree. Two or three rides across different temperatures is
-enough.
+enough, and you never have to do it again.
 
 ### Reference predictions
 
